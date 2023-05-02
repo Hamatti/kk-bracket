@@ -186,7 +186,7 @@ function createRow(entry, tr, games, teams) {
         const span = document.createElement("span");
         span.textContent = `(in ${entry[`match_${game.id}_match_played`]})`;
         inner.appendChild(span);
-        if (game.round_sequence === 1 && isCorrectAmountGames(entry, game)) {
+        if (correctPick && isCorrectAmountGames(entry, game)) {
           span.classList.add("correct-games");
         }
       }
