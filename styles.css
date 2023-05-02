@@ -95,3 +95,11 @@ footer {
 input[type="radio"] {
   margin-right: 2em;
 }
+
+div.disabled {
+  color: #ccc;
+}
+fieldset {
+  margin-bottom: 1em;
+  flex-wrap: wrap;
+}
