@@ -229,24 +229,38 @@ async function renderFields() {
   const conferenceFinals = games.filter((game) => game.round_sequence === 3);
 
   fieldset.innerHTML = "<legend>Valitse kierros</legend>";
+  const r1 = createRoundSelector("1. kierros", "first", fieldset);
+  const r2 = createRoundSelector("2. kierros", "second", fieldset);
+  const r3 = createRoundSelector("Konferenssifinaalit", "third", fieldset);
+  const r4 = createRoundSelector("Stanley Cup", "fourth", fieldset);
   if (!hasFinished(firstRoundGames)) {
-    const r1 = createRoundSelector("Ensimmäinen kierros", "first", fieldset);
+    r1.disabled = false;
     r1.checked = true;
+    r1.parentNode.classList.remove("disabled");
   } else if (!hasFinished(secondRoundGames)) {
-    const r1 = createRoundSelector("Ensimmäinen kierros", "first", fieldset);
-    const r2 = createRoundSelector("Toinen kierros", "second", fieldset);
+    r1.disabled = false;
+    r2.disabled = false;
     r2.checked = true;
+    r1.parentNode.classList.remove("disabled");
+    r2.parentNode.classList.remove("disabled");
   } else if (!hasFinished(conferenceFinals)) {
-    const r1 = createRoundSelector("Ensimmäinen kierros", "first", fieldset);
-    const r2 = createRoundSelector("Toinen kierros", "second", fieldset);
-    const r3 = createRoundSelector("Konferenssifinaalit", "third", fieldset);
+    r1.disabled = false;
+    r2.disabled = false;
+    r3.disabled = false;
     r3.checked = true;
+    r1.parentNode.classList.remove("disabled");
+    r2.parentNode.classList.remove("disabled");
+    r3.parentNode.classList.remove("disabled");
   } else {
-    const r1 = createRoundSelector("Ensimmäinen kierros", "first", fieldset);
-    const r2 = createRoundSelector("Toinen kierros", "second", fieldset);
-    const r3 = createRoundSelector("Konferenssifinaalit", "third", fieldset);
-    const r4 = createRoundSelector("Stanley Cup", "fourth", fieldset);
+    r1.disabled = false;
+    r2.disabled = false;
+    r3.disabled = false;
+    r4.disabled = false;
     r4.checked = true;
+    r1.parentNode.classList.remove("disabled");
+    r2.parentNode.classList.remove("disabled");
+    r3.parentNode.classList.remove("disabled");
+    r4.parentNode.classList.remove("disabled");
   }
 }
 
@@ -256,6 +270,8 @@ function handleRoundChange(ev) {
 }
 
 function createRoundSelector(label, name, fieldset) {
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("disabled");
   const radio = document.createElement("input");
   radio.type = "radio";
   radio.value = name;
@@ -266,9 +282,12 @@ function createRoundSelector(label, name, fieldset) {
   labelNode.htmlFor = name;
 
   radio.onchange = handleRoundChange;
+  radio.disabled = true;
 
-  fieldset.appendChild(labelNode);
-  fieldset.appendChild(radio);
+  wrapper.appendChild(labelNode);
+  wrapper.appendChild(radio);
+
+  fieldset.appendChild(wrapper);
   return radio;
 }
 
@@ -321,7 +340,7 @@ async function renderTable(toDisplay) {
 
   document.querySelector("table").style = "display: block";
   document.querySelector("#loading").style = "display: none";
-  fieldset.style = "display: block";
+  fieldset.style.display = "flex";
 }
 
 renderFields().then(() => renderTable());
