@@ -38,4 +38,6 @@ Näin voi kokeilla eri skenaarioita vaihtamalla mock-api.jsonin arvoja. Muista k
 
 Kiitos lehtulle APIen kaivamisesta!
 
+Kiitos Antille CSS:stä joka mahdollistaa mobiilikäytön!
+
 \* Koodiklinikka on vallan mukava suomalainen ohjelmistokehittäjien ja siitä kiinnostuneiden yhteisö. Meitä on reilu 5000 Slackissa ja #penkkiurheilu-kanavalla seurataan lätkää suurella intohimolla.
