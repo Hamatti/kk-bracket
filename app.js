@@ -19,6 +19,7 @@ const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
 
 let ENTRIES_DATA = null;
 let SERIES_DATA = null;
+let LEADER_DATA = null;
 
 let title = document.querySelector("title");
 title.textContent = `${LEAGUE_DISPLAY_NAME} ${title.textContent}`;
@@ -133,7 +134,11 @@ function createRow(entry, tr, games, teams) {
   tr.appendChild(pointsTd);
   tr.appendChild(possiblePointsTd);
 
-  rankTd.innerHTML = rank;
+  let rankHTML = rank;
+  if (parseInt(possible_points) < parseInt(LEADER_DATA.points)) {
+    rankHTML = `<s title="eliminated">${rank}</s>`;
+  }
+  rankTd.innerHTML = rankHTML;
 
   nameTd.innerHTML = entry_name;
   nameTd.classList.add("wide");
@@ -298,6 +303,10 @@ async function fetchData() {
 
   if (SERIES_DATA === null) {
     SERIES_DATA = await fetch(SERIES_URL).then((res) => res.json());
+  }
+
+  if (LEADER_DATA === null) {
+    LEADER_DATA = ENTRIES_DATA.reduce((prev, curr) => parseInt(prev.points) < parseInt(curr.points) ? curr : prev, ENTRIES_DATA[0]);
   }
 
   return [ENTRIES_DATA, SERIES_DATA];
