@@ -36,7 +36,7 @@ Näin voi kokeilla eri skenaarioita vaihtamalla mock-api.jsonin arvoja. Muista k
 
 ## Muut huomiot
 
-Kiitos lehtulle APIen kaivamisesta!
+Kiitos lehtulle APIen kaivamisesta ja koodikontribuutiosta!
 
 Kiitos Antille CSS:stä joka mahdollistaa mobiilikäytön!
 
