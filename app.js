@@ -16,6 +16,7 @@ const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 
 const ENTRIES_URL = `https://low6-nhl-bracket2024-prod.azurewebsites.net//leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=50`;
 const SERIES_URL = "https://low6-nhl-bracket2024-prod.azurewebsites.net/game";
+const LOGO_BASE = "https://assets.nhle.com/logos/nhl/svg/";
 
 let ENTRIES_DATA = null;
 let SERIES_DATA = null;
@@ -90,12 +91,16 @@ function createHeaders(games, teams) {
     const homeLogo = document.createElement("img");
     const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
     homeLogo.alt = homeTeam?.display_name || "?";
-    homeLogo.src = homeTeam.team_logo || null;
+    homeLogo.src = homeTeam
+      ? `${LOGO_BASE}${homeTeam.abbreviation}_light.svg`
+      : null;
 
     const awayLogo = document.createElement("img");
     const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
     awayLogo.alt = awayTeam?.display_name || "?";
-    awayLogo.src = awayTeam?.team_logo || null;
+    awayLogo.src = awayTeam
+      ? `${LOGO_BASE}${awayTeam.abbreviation}_light.svg`
+      : null;
 
     const separator = document.createElement("span");
     separator.textContent = " - ";
@@ -147,7 +152,7 @@ function createRow(entry, tr, games, teams) {
   const championTeam = teams.find(
     (team) => team.team_id === parseInt(champion_id)
   );
-  championLogo.src = championTeam.team_logo;
+  championLogo.src = `${LOGO_BASE}${championTeam.abbreviation}_light.svg`;
   championLogo.alt = championTeam.display_name;
   championTd.appendChild(championLogo);
   championTd.classList.add("narrow");
@@ -180,7 +185,7 @@ function createRow(entry, tr, games, teams) {
       const pickedTeam = teams.find(
         (team) => team.team_id === parseInt(userPick)
       );
-      selectedPick.src = pickedTeam.team_logo;
+      selectedPick.src = `${LOGO_BASE}${pickedTeam.abbreviation}_light.svg`;
       selectedPick.alt = pickedTeam.display_name;
     }
 
