@@ -306,7 +306,11 @@ async function fetchData() {
   }
 
   if (LEADER_DATA === null) {
-    LEADER_DATA = ENTRIES_DATA.reduce((prev, curr) => parseInt(prev.points) < parseInt(curr.points) ? curr : prev, ENTRIES_DATA[0]);
+    LEADER_DATA = ENTRIES_DATA.reduce(
+      (prev, curr) =>
+        parseInt(prev.points) < parseInt(curr.points) ? curr : prev,
+      ENTRIES_DATA[0]
+    );
   }
 
   return [ENTRIES_DATA, SERIES_DATA];
