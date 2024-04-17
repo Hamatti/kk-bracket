@@ -15,7 +15,7 @@ const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 /* END OF CONFIGURATION */
 
 const ENTRIES_URL = `https://low6-nhl-bracket2024-prod.azurewebsites.net//leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=50`;
-const SERIES_URL = "https://low6-nhl-bracket2024-prod.azurewebsites.net//game";
+const SERIES_URL = "https://low6-nhl-bracket2024-prod.azurewebsites.net/game";
 
 let ENTRIES_DATA = null;
 let SERIES_DATA = null;
@@ -88,14 +88,14 @@ function createHeaders(games, teams) {
     tr.appendChild(th);
 
     const homeLogo = document.createElement("img");
-    homeLogo.alt =
-      teams.find((team) => team.team_id == game.team_1_id)?.display_name || "?";
-    homeLogo.src = `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.team_1_id}.svg`;
+    const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
+    homeLogo.alt = homeTeam?.display_name || "?";
+    homeLogo.src = homeTeam.team_logo || null;
 
     const awayLogo = document.createElement("img");
-    awayLogo.alt =
-      teams.find((team) => team.team_id == game.team_2_id)?.display_name || "?";
-    awayLogo.src = `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.team_2_id}.svg`;
+    const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
+    awayLogo.alt = awayTeam?.display_name || "?";
+    awayLogo.src = awayTeam?.team_logo || null;
 
     const separator = document.createElement("span");
     separator.textContent = " - ";
@@ -144,10 +144,11 @@ function createRow(entry, tr, games, teams) {
   nameTd.classList.add("wide");
 
   let championLogo = document.createElement("img");
-  championLogo.src = `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${champion_id}.svg`;
-  championLogo.alt = teams.find(
+  const championTeam = teams.find(
     (team) => team.team_id === parseInt(champion_id)
-  ).display_name;
+  );
+  championLogo.src = championTeam.team_logo;
+  championLogo.alt = championTeam.display_name;
   championTd.appendChild(championLogo);
   championTd.classList.add("narrow");
   championTd.classList.add("logo");
@@ -176,10 +177,11 @@ function createRow(entry, tr, games, teams) {
       selectedPick.src = `dash.svg`;
       selectedPick.alt = "Pick no longer in play";
     } else {
-      selectedPick.src = `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${userPick}.svg`;
-      selectedPick.alt = teams.find(
+      const pickedTeam = teams.find(
         (team) => team.team_id === parseInt(userPick)
-      ).display_name;
+      );
+      selectedPick.src = pickedTeam.team_logo;
+      selectedPick.alt = pickedTeam.display_name;
     }
 
     // If the series is finished, show which picks were right
