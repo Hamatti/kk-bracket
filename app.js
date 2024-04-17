@@ -10,12 +10,12 @@
 // If you want to configure this to your league, change the LEAGUE_ID to match
 // your league id in NHL Bracket Challenge
 // and LEAGUE_DISPLAY_NAME to your league's name for the heading
-const LEAGUE_ID = 19816;
+const LEAGUE_ID = 15972;
 const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 /* END OF CONFIGURATION */
 
-const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=50`;
-const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
+const ENTRIES_URL = `https://low6-nhl-bracket2024-prod.azurewebsites.net//leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=50`;
+const SERIES_URL = "https://low6-nhl-bracket2024-prod.azurewebsites.net//game";
 
 let ENTRIES_DATA = null;
 let SERIES_DATA = null;
