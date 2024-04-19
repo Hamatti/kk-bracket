@@ -144,11 +144,13 @@ function createRow(entry, tr, games, teams) {
     rankHTML = `<s title="eliminated">${rank}</s>`;
   }
   rankTd.innerHTML = rankHTML;
+  rankTd.dataset.heading = "rank";
 
   // Bit of entry name cleaning up as the software default's to
   // format of "User name's bracket 1" and that's ugly
   nameTd.innerHTML = entry_name.replace("'s bracket 1", "");
   nameTd.classList.add("wide");
+  nameTd.dataset.heading = "name";
 
   let championLogo = document.createElement("img");
   const championTeam = teams.find(
@@ -159,10 +161,13 @@ function createRow(entry, tr, games, teams) {
   championTd.appendChild(championLogo);
   championTd.classList.add("narrow");
   championTd.classList.add("logo");
+  championTd.dataset.heading = "champion";
 
   pointsTd.innerHTML = points;
+  pointsTd.dataset.heading = "points";
 
   possiblePointsTd.innerHTML = possible_points;
+  possiblePointsTd.dataset.heading = "max points";
 
   games.forEach((game) => {
     let gameTd = document.createElement("td");
@@ -174,6 +179,10 @@ function createRow(entry, tr, games, teams) {
 
     gameTd.classList.add("narrow");
     gameTd.classList.add("logo");
+
+    const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
+    const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
+    gameTd.dataset.heading = `${homeTeam.abbreviation} - ${awayTeam.abbreviation}`;
 
     const gameId = game.id;
     const pickKey = `match_${gameId}_pick`;
