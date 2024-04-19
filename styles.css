@@ -27,11 +27,11 @@ img {
 }
 
 td.correct {
-  background: green;
+  background: #87d287;
 }
 
 td.incorrect {
-  background: rgb(106, 3, 3);
+  background: rgb(232, 124, 124);
 }
 
 th {
