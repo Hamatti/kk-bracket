@@ -34,6 +34,11 @@ td.incorrect {
   background: rgb(232, 124, 124);
 }
 
+td.incorrect img {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
 th {
   padding-right: 5px;
 }
@@ -64,12 +69,11 @@ div.series {
   justify-content: center;
 }
 span {
-  color: rgb(199, 199, 199);
+  color: rgb(10, 3, 61);
 }
 
 span.correct-games {
   font-weight: 900;
-  color: white;
 }
 
 div.inner {
