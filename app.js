@@ -145,7 +145,9 @@ function createRow(entry, tr, games, teams) {
   }
   rankTd.innerHTML = rankHTML;
 
-  nameTd.innerHTML = entry_name;
+  // Bit of entry name cleaning up as the software default's to
+  // format of "User name's bracket 1" and that's ugly
+  nameTd.innerHTML = entry_name.replace("'s bracket 1", "");
   nameTd.classList.add("wide");
 
   let championLogo = document.createElement("img");
