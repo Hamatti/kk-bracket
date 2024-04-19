@@ -10,12 +10,13 @@
 // If you want to configure this to your league, change the LEAGUE_ID to match
 // your league id in NHL Bracket Challenge
 // and LEAGUE_DISPLAY_NAME to your league's name for the heading
-const LEAGUE_ID = 19816;
+const LEAGUE_ID = 15972;
 const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 /* END OF CONFIGURATION */
 
-const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=50`;
-const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
+const ENTRIES_URL = `https://low6-nhl-bracket2024-prod.azurewebsites.net//leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=50`;
+const SERIES_URL = "https://low6-nhl-bracket2024-prod.azurewebsites.net/game";
+const LOGO_BASE = "https://assets.nhle.com/logos/nhl/svg/";
 
 let ENTRIES_DATA = null;
 let SERIES_DATA = null;
@@ -88,14 +89,18 @@ function createHeaders(games, teams) {
     tr.appendChild(th);
 
     const homeLogo = document.createElement("img");
-    homeLogo.alt =
-      teams.find((team) => team.team_id == game.team_1_id)?.display_name || "?";
-    homeLogo.src = `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.team_1_id}.svg`;
+    const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
+    homeLogo.alt = homeTeam?.display_name || "?";
+    homeLogo.src = homeTeam
+      ? `${LOGO_BASE}${homeTeam.abbreviation}_light.svg`
+      : null;
 
     const awayLogo = document.createElement("img");
-    awayLogo.alt =
-      teams.find((team) => team.team_id == game.team_2_id)?.display_name || "?";
-    awayLogo.src = `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.team_2_id}.svg`;
+    const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
+    awayLogo.alt = awayTeam?.display_name || "?";
+    awayLogo.src = awayTeam
+      ? `${LOGO_BASE}${awayTeam.abbreviation}_light.svg`
+      : null;
 
     const separator = document.createElement("span");
     separator.textContent = " - ";
@@ -139,22 +144,30 @@ function createRow(entry, tr, games, teams) {
     rankHTML = `<s title="eliminated">${rank}</s>`;
   }
   rankTd.innerHTML = rankHTML;
+  rankTd.dataset.heading = "rank";
 
-  nameTd.innerHTML = entry_name;
+  // Bit of entry name cleaning up as the software default's to
+  // format of "User name's bracket 1" and that's ugly
+  nameTd.innerHTML = entry_name.replace("'s bracket 1", "");
   nameTd.classList.add("wide");
+  nameTd.dataset.heading = "name";
 
   let championLogo = document.createElement("img");
-  championLogo.src = `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${champion_id}.svg`;
-  championLogo.alt = teams.find(
+  const championTeam = teams.find(
     (team) => team.team_id === parseInt(champion_id)
-  ).display_name;
+  );
+  championLogo.src = `${LOGO_BASE}${championTeam.abbreviation}_light.svg`;
+  championLogo.alt = championTeam.display_name;
   championTd.appendChild(championLogo);
   championTd.classList.add("narrow");
   championTd.classList.add("logo");
+  championTd.dataset.heading = "champion";
 
   pointsTd.innerHTML = points;
+  pointsTd.dataset.heading = "points";
 
   possiblePointsTd.innerHTML = possible_points;
+  possiblePointsTd.dataset.heading = "max points";
 
   games.forEach((game) => {
     let gameTd = document.createElement("td");
@@ -167,6 +180,10 @@ function createRow(entry, tr, games, teams) {
     gameTd.classList.add("narrow");
     gameTd.classList.add("logo");
 
+    const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
+    const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
+    gameTd.dataset.heading = `${homeTeam.abbreviation} - ${awayTeam.abbreviation}`;
+
     const gameId = game.id;
     const pickKey = `match_${gameId}_pick`;
     const userPick = entry[pickKey];
@@ -176,10 +193,11 @@ function createRow(entry, tr, games, teams) {
       selectedPick.src = `dash.svg`;
       selectedPick.alt = "Pick no longer in play";
     } else {
-      selectedPick.src = `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${userPick}.svg`;
-      selectedPick.alt = teams.find(
+      const pickedTeam = teams.find(
         (team) => team.team_id === parseInt(userPick)
-      ).display_name;
+      );
+      selectedPick.src = `${LOGO_BASE}${pickedTeam.abbreviation}_light.svg`;
+      selectedPick.alt = pickedTeam.display_name;
     }
 
     // If the series is finished, show which picks were right
@@ -306,7 +324,11 @@ async function fetchData() {
   }
 
   if (LEADER_DATA === null) {
-    LEADER_DATA = ENTRIES_DATA.reduce((prev, curr) => parseInt(prev.points) < parseInt(curr.points) ? curr : prev, ENTRIES_DATA[0]);
+    LEADER_DATA = ENTRIES_DATA.reduce(
+      (prev, curr) =>
+        parseInt(prev.points) < parseInt(curr.points) ? curr : prev,
+      ENTRIES_DATA[0]
+    );
   }
 
   return [ENTRIES_DATA, SERIES_DATA];

@@ -103,3 +103,34 @@ fieldset {
   margin-bottom: 1em;
   flex-wrap: wrap;
 }
+
+@media (max-width: 650px) {
+  th {
+    display: none;
+  }
+  td {
+    display: block;
+    padding: 0.25em;
+  }
+
+  td,
+  td.narrow,
+  td.wide {
+    width: 100%;
+  }
+
+  td.logo {
+    text-align: left;
+  }
+
+  td::before {
+    content: attr(data-heading) ": ";
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  div.inner {
+    display: flex;
+    justify-content: start;
+  }
+}
