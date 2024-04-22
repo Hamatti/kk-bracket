@@ -40,4 +40,6 @@ Kiitos lehtulle APIen kaivamisesta ja koodikontribuutiosta!
 
 Kiitos Antille CSS:stä joka mahdollistaa mobiilikäytön!
 
+Kiitos Alexille XSS-injektion torjumisesta!
+
 \* Koodiklinikka on vallan mukava suomalainen ohjelmistokehittäjien ja siitä kiinnostuneiden yhteisö. Meitä on reilu 5000 Slackissa ja #penkkiurheilu-kanavalla seurataan lätkää suurella intohimolla.
