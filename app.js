@@ -148,7 +148,7 @@ function createRow(entry, tr, games, teams) {
 
   // Bit of entry name cleaning up as the software default's to
   // format of "User name's bracket 1" and that's ugly
-  const entryNameCleaned = entry_name.replace(/'s bracket \d+/, "")
+  const entryNameCleaned = entry_name.replace(/'s bracket \d+/, "");
   const nameTdText = document.createTextNode(entryNameCleaned);
   nameTd.appendChild(nameTdText);
   nameTd.classList.add("wide");
@@ -385,7 +385,6 @@ function uniqueBy(array, key) {
   let uniques = [];
   for (let idx in array) {
     let obj = array[idx];
-    console.log({ obj, uniques });
     if (uniques.find((ex) => ex[key] == obj[key]) == undefined) {
       uniques.push(obj);
     }
