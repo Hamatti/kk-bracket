@@ -321,7 +321,6 @@ function createRoundSelector(label, name, fieldset) {
 async function fetchData() {
   if (ENTRIES_DATA === null) {
     ENTRIES_DATA = (await fetch(ENTRIES_URL).then((res) => res.json())).entries;
-    ENTRIES_DATA = uniqueBy(ENTRIES_DATA, "entry_id");
   }
 
   if (SERIES_DATA === null) {
