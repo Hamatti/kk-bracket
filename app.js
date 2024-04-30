@@ -321,6 +321,7 @@ function createRoundSelector(label, name, fieldset) {
 async function fetchData() {
   if (ENTRIES_DATA === null) {
     ENTRIES_DATA = (await fetch(ENTRIES_URL).then((res) => res.json())).entries;
+    ENTRIES_DATA = uniqueBy(ENTRIES_DATA, "entry_id");
   }
 
   if (SERIES_DATA === null) {
@@ -379,3 +380,15 @@ async function renderTable(toDisplay) {
 }
 
 renderFields().then(() => renderTable());
+
+function uniqueBy(array, key) {
+  let uniques = [];
+  for (let idx in array) {
+    let obj = array[idx];
+    console.log({ obj, uniques });
+    if (uniques.find((ex) => ex[key] == obj[key]) == undefined) {
+      uniques.push(obj);
+    }
+  }
+  return uniques;
+}
