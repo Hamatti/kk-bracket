@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NHL Bracket</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>NHL Bracket Leaderboard 2024</h1>
+
+    <nav>
+      <fieldset style="display: none">
+        <legend>Valitse kierros</legend>
+      </fieldset>
+    </nav>
+
+    <div id="loading">Haetaan dataa...</div>
+    <table style="display: none">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+    <footer>
+      <p>
+        <img src="dash.svg" alt="Pick no longer in play" width="20px" />
+        tarkoittaa, että pelaajan valinta on tippunut eikä voi tuottaa enää
+        pisteitä.
+      </p>
+      <p>
+        <strong>Max.</strong> tarkoittaa maksimipistemäärää, jonka pelaaja voi
+        vielä saada.
+      </p>
+      <hr />
+      <p>
+        Koodi on MIT-lisensöity ja löytyy GitHubista:
+        <a href="https://github.com/hamatti/kk-bracket">hamatti/kk-bracket</a>.
+        Parannusideat ja pull requestit tervetulleita.
+      </p>
+      <p>Alkuperäisen koodannut <a href="https://hamatti.org">Juhis</a>.</p>
+    </footer>
+
+    <script src="2024.js"></script>
+  </body>
+</html>
