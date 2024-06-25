@@ -1,0 +1,140 @@
+h1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+h1 img {
+  margin-right: 1em;
+}
+table {
+  max-width: 1600px;
+  width: 100%;
+  border-collapse: collapse;
+  margin: auto;
+}
+
+thead {
+  text-align: left;
+}
+
+tbody > tr:nth-child(2n) {
+  background: #f5f5f5;
+}
+
+img {
+  max-width: 40px;
+}
+
+td.correct {
+  background: #87d287;
+}
+
+td.incorrect {
+  background: rgb(232, 124, 124);
+}
+
+td.incorrect img {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+th {
+  padding-right: 5px;
+}
+
+th.series {
+  min-width: 80px;
+}
+
+td {
+  width: 7%;
+}
+
+td.wide {
+  width: 15%;
+}
+
+td.narrow {
+  width: 5%;
+}
+
+td.logo {
+  text-align: center;
+}
+
+div.series {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+span {
+  color: rgb(10, 3, 61);
+}
+
+span.correct-games {
+  font-weight: 900;
+}
+
+div.inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#last-updated {
+  max-width: 100ch;
+  margin: auto;
+  margin-top: 2em;
+}
+footer {
+  max-width: 100ch;
+  margin: auto;
+}
+
+#loading {
+  text-align: center;
+}
+
+input[type="radio"] {
+  margin-right: 2em;
+}
+
+div.disabled {
+  color: #ccc;
+}
+fieldset {
+  margin-bottom: 1em;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 650px) {
+  th {
+    display: none;
+  }
+  td {
+    display: block;
+    padding: 0.25em;
+  }
+
+  td,
+  td.narrow,
+  td.wide {
+    width: 100%;
+  }
+
+  td.logo {
+    text-align: left;
+  }
+
+  td::before {
+    content: attr(data-heading) ": ";
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  div.inner {
+    display: flex;
+    justify-content: start;
+  }
+}
