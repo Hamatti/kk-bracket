@@ -10,15 +10,17 @@
 // If you want to configure this to your league, change the LEAGUE_ID to match
 // your league id in NHL Bracket Challenge
 // and LEAGUE_DISPLAY_NAME to your league's name for the heading
-const LEAGUE_ID = 15972;
+const LEAGUE_ID = 28756;
 const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 /* END OF CONFIGURATION */
 
-const ENTRIES_URL = `https://low6-nhl-bracket2024-prod.azurewebsites.net//leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=50`;
-const SERIES_URL = "https://low6-nhl-bracket2024-prod.azurewebsites.net/game";
+const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
+const MEMBERS_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/search-members?search=&offset=0&limit=50`;
+const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
 const LOGO_BASE = "https://assets.nhle.com/logos/nhl/svg/";
 
 let ENTRIES_DATA = null;
+let MEMBERS_DATA = null;
 let SERIES_DATA = null;
 let LEADER_DATA = null;
 
@@ -323,6 +325,10 @@ async function fetchData() {
     ENTRIES_DATA = (await fetch(ENTRIES_URL).then((res) => res.json())).entries;
   }
 
+  if (MEMBERS_DATA === null) {
+    MEMBERS_DATA = (await fetch(MEMBERS_URL).then((res) => res.json())).members;
+  }
+
   if (SERIES_DATA === null) {
     SERIES_DATA = await fetch(SERIES_URL).then((res) => res.json());
   }
@@ -335,12 +341,42 @@ async function fetchData() {
     );
   }
 
-  return [ENTRIES_DATA, SERIES_DATA];
+  return [ENTRIES_DATA, MEMBERS_DATA, SERIES_DATA];
 }
 
 async function renderTable(toDisplay) {
   clearTable();
-  const [entries, series] = await fetchData();
+  const [entries, members, series] = await fetchData();
+
+  const tbody = document.querySelector("tbody");
+
+  members.forEach((member) => {
+    console.log({ member });
+    let tr = document.createElement("tr");
+    let rank = document.createElement("td");
+    rank.textContent = "-";
+
+    let name = document.createElement("td");
+    name.textContent = member.username;
+
+    let champion = document.createElement("td");
+    champion.textContent = "-";
+    let points = document.createElement("td");
+    points.textContent = "-";
+    let maxPoints = document.createElement("td");
+    maxPoints.textContent = "-";
+
+    tr.appendChild(rank);
+    tr.appendChild(name);
+    tr.appendChild(champion);
+    tr.appendChild(points);
+    tr.appendChild(maxPoints);
+    tbody.appendChild(tr);
+  });
+
+  document.querySelector("table").style = "display: block";
+  document.querySelector("#loading").style = "display: none";
+  return; // Once the games start, remove lines 351-380
 
   const games = series.game.series_results;
   const teams = series.game.teams;
@@ -365,7 +401,7 @@ async function renderTable(toDisplay) {
 
   createHeaders(roundToDisplay, teams);
 
-  const tbody = document.querySelector("tbody");
+  // const tbody = document.querySelector("tbody");
 
   entries.forEach((entry) => {
     let tr = document.createElement("tr");
@@ -378,7 +414,8 @@ async function renderTable(toDisplay) {
   fieldset.style.display = "flex";
 }
 
-renderFields().then(() => renderTable());
+// renderFields().then(() => renderTable());
+renderTable();
 
 function uniqueBy(array, key) {
   let uniques = [];
