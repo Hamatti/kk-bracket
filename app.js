@@ -251,7 +251,7 @@ function clearHeaders() {
 }
 
 async function renderFields() {
-  let [_, series] = await fetchData();
+  let [_, members, series] = await fetchData();
   let games = series.game.series_results;
   const firstRoundGames = games.filter((game) => game.round_sequence === 1);
   const secondRoundGames = games.filter((game) => game.round_sequence === 2);
@@ -348,36 +348,6 @@ async function renderTable(toDisplay) {
   clearTable();
   const [entries, members, series] = await fetchData();
 
-  const tbody = document.querySelector("tbody");
-
-  members.forEach((member) => {
-    console.log({ member });
-    let tr = document.createElement("tr");
-    let rank = document.createElement("td");
-    rank.textContent = "-";
-
-    let name = document.createElement("td");
-    name.textContent = member.username;
-
-    let champion = document.createElement("td");
-    champion.textContent = "-";
-    let points = document.createElement("td");
-    points.textContent = "-";
-    let maxPoints = document.createElement("td");
-    maxPoints.textContent = "-";
-
-    tr.appendChild(rank);
-    tr.appendChild(name);
-    tr.appendChild(champion);
-    tr.appendChild(points);
-    tr.appendChild(maxPoints);
-    tbody.appendChild(tr);
-  });
-
-  document.querySelector("table").style = "display: block";
-  document.querySelector("#loading").style = "display: none";
-  return; // Once the games start, remove lines 351-380
-
   const games = series.game.series_results;
   const teams = series.game.teams;
 
@@ -401,7 +371,7 @@ async function renderTable(toDisplay) {
 
   createHeaders(roundToDisplay, teams);
 
-  // const tbody = document.querySelector("tbody");
+  const tbody = document.querySelector("tbody");
 
   entries.forEach((entry) => {
     let tr = document.createElement("tr");
@@ -414,8 +384,7 @@ async function renderTable(toDisplay) {
   fieldset.style.display = "flex";
 }
 
-// renderFields().then(() => renderTable());
-renderTable();
+renderFields().then(() => renderTable());
 
 function uniqueBy(array, key) {
   let uniques = [];
