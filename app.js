@@ -283,6 +283,12 @@ async function renderFields() {
   const secondRoundGames = games.filter((game) => game.round_sequence === 2);
   const conferenceFinals = games.filter((game) => game.round_sequence === 3);
 
+  // Remove old event listeners before clearing fieldset
+  const oldRadios = fieldset.querySelectorAll('input[type="radio"]');
+  for (const radio of oldRadios) {
+    radio.removeEventListener('change', handleRoundChange);
+  }
+
   fieldset.innerHTML = "<legend>Valitse kierros</legend>";
   const r1 = createRoundSelector("1. kierros", "first", fieldset);
   const r2 = createRoundSelector("2. kierros", "second", fieldset);
