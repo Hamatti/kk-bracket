@@ -14,6 +14,32 @@ const LEAGUE_ID = 28756;
 const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 /* END OF CONFIGURATION */
 
+// Theme switching functionality
+function initTheme() {
+	const themeToggle = document.getElementById("theme-toggle");
+	const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+	const storedTheme = localStorage.getItem("theme");
+
+	// Set initial theme
+	if (storedTheme) {
+		document.documentElement.setAttribute("data-theme", storedTheme);
+	} else if (prefersDark) {
+		document.documentElement.setAttribute("data-theme", "dark");
+	}
+
+	// Handle theme toggle
+	themeToggle.addEventListener("click", () => {
+		const currentTheme = document.documentElement.getAttribute("data-theme");
+		const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+		document.documentElement.setAttribute("data-theme", newTheme);
+		localStorage.setItem("theme", newTheme);
+	});
+}
+
+// Initialize theme after DOM content is loaded
+document.addEventListener("DOMContentLoaded", initTheme);
+
 const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
 const MEMBERS_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/search-members?search=&offset=0&limit=50`;
 const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
