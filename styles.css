@@ -145,12 +145,38 @@ fieldset {
 }
 
 @media (max-width: 650px) {
+  table {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  tbody {
+    display: block;
+    width: 100%;
+  }
+
+  tbody tr {
+    display: block;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--disabled-color);
+    padding: 0.5rem 1rem;
+    box-sizing: border-box;
+    background: var(--bg-color);
+  }
+
   th {
     display: none;
   }
+
   td {
     display: block;
-    padding: 0.25em;
+    width: 100%;
+    padding: 0.5em 0;
+    box-sizing: border-box;
+    font-size: 1.1em;
   }
 
   td,
@@ -161,22 +187,96 @@ fieldset {
 
   td.logo {
     text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   td::before {
-    content: attr(data-heading) ": ";
+    content: attr(data-heading);
     font-weight: 700;
     text-transform: capitalize;
+    display: inline-block;
+    min-width: 120px;
+    color: var(--text-color);
+    opacity: 0.7;
+  }
+
+  /* Style for playoff matchup cells */
+  td[data-heading*=" - "] {
+    display: flex;
+    align-items: center;
+  }
+
+  td[data-heading*=" - "]::before {
+    min-width: auto;
+    margin-right: 1rem;
+    padding: 0.2rem 0.5rem;
+    background: var(--table-stripe);
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  td[data-heading*=" - "] .inner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  td[data-heading*=" - "] img,
+  td[data-heading="champion"] img {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Make dash icon (eliminated pick) slightly smaller than team logos */
+  td[data-heading*=" - "] .dash-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Add some breathing room around logos */
+  td.logo .inner {
+    padding: 0.3rem 0;
+  }
+
+  /* Basic info styling */
+  td[data-heading="rank"],
+  td[data-heading="points"],
+  td[data-heading="max points"] {
+    font-size: 1.2em;
+    font-weight: 500;
+  }
+
+  td[data-heading="name"] {
+    font-size: 1.3em;
+    font-weight: 600;
+    padding: 0.7em 0;
   }
 
   div.inner {
     display: flex;
-    justify-content: start;
+    align-items: center;
   }
 
   h1 {
     margin: 3.5rem 1rem 2rem 1rem;
     font-size: 1.5rem;
+  }
+
+  /* Improve visibility of correct/incorrect picks */
+  td.correct {
+    background: var(--correct-bg);
+    border-radius: 4px;
+  }
+
+  td.incorrect {
+    background: var(--incorrect-bg);
+    border-radius: 4px;
+  }
+
+  body {
+    overflow-x: hidden;
   }
 }
 
