@@ -16,25 +16,25 @@ const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 
 // Theme switching functionality
 function initTheme() {
-	const themeToggle = document.getElementById("theme-toggle");
-	const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-	const storedTheme = localStorage.getItem("theme");
+  const themeToggle = document.getElementById("theme-toggle");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const storedTheme = localStorage.getItem("theme");
 
-	// Set initial theme
-	if (storedTheme) {
-		document.documentElement.setAttribute("data-theme", storedTheme);
-	} else if (prefersDark) {
-		document.documentElement.setAttribute("data-theme", "dark");
-	}
+  // Set initial theme
+  if (storedTheme) {
+    document.documentElement.setAttribute("data-theme", storedTheme);
+  } else if (prefersDark) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
 
-	// Handle theme toggle
-	themeToggle.addEventListener("click", () => {
-		const currentTheme = document.documentElement.getAttribute("data-theme");
-		const newTheme = currentTheme === "dark" ? "light" : "dark";
+  // Handle theme toggle
+  themeToggle.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
 
-		document.documentElement.setAttribute("data-theme", newTheme);
-		localStorage.setItem("theme", newTheme);
-	});
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+  });
 }
 
 // Initialize theme after DOM content is loaded
@@ -50,10 +50,10 @@ let MEMBERS_DATA = null;
 let SERIES_DATA = null;
 let LEADER_DATA = null;
 
-let title = document.querySelector("title");
+const title = document.querySelector("title");
 title.textContent = `${LEAGUE_DISPLAY_NAME} ${title.textContent}`;
 
-let h1 = document.querySelector("h1");
+const h1 = document.querySelector("h1");
 h1.textContent = `${LEAGUE_DISPLAY_NAME} ${h1.textContent}`;
 
 /**
@@ -108,7 +108,7 @@ function hasFinished(series) {
  */
 function createHeaders(games, teams) {
   const tr = document.querySelector("thead > tr");
-  games.forEach((game) => {
+  for (const game of games) {
     const th = document.createElement("th");
     const div = document.createElement("div");
     div.classList.add("series");
@@ -135,7 +135,7 @@ function createHeaders(games, teams) {
     div.appendChild(homeLogo);
     div.appendChild(separator);
     div.appendChild(awayLogo);
-  });
+  }
 }
 
 /**
@@ -155,11 +155,11 @@ function createRow(entry, tr, games, teams) {
   const { rank, entry_name, points, possible_points, champion_id } = entry;
 
   // Create columns
-  let rankTd = document.createElement("td");
-  let nameTd = document.createElement("td");
-  let pointsTd = document.createElement("td");
-  let possiblePointsTd = document.createElement("td");
-  let championTd = document.createElement("td");
+  const rankTd = document.createElement("td");
+  const nameTd = document.createElement("td");
+  const pointsTd = document.createElement("td");
+  const possiblePointsTd = document.createElement("td");
+  const championTd = document.createElement("td");
 
   tr.appendChild(rankTd);
   tr.appendChild(nameTd);
@@ -182,7 +182,7 @@ function createRow(entry, tr, games, teams) {
   nameTd.classList.add("wide");
   nameTd.dataset.heading = "name";
 
-  let championLogo = document.createElement("img");
+  const championLogo = document.createElement("img");
   const championTeam = teams.find(
     (team) => team.team_id === Number.parseInt(champion_id),
   );
@@ -199,12 +199,12 @@ function createRow(entry, tr, games, teams) {
   possiblePointsTd.innerHTML = possible_points;
   possiblePointsTd.dataset.heading = "max points";
 
-  games.forEach((game) => {
-    let gameTd = document.createElement("td");
-    let inner = document.createElement("div");
+  for (const game of games) {
+    const gameTd = document.createElement("td");
+    const inner = document.createElement("div");
     gameTd.appendChild(inner);
     inner.classList.add("inner");
-    let selectedPick = document.createElement("img");
+    const selectedPick = document.createElement("img");
     inner.appendChild(selectedPick);
 
     gameTd.classList.add("narrow");
@@ -212,17 +212,16 @@ function createRow(entry, tr, games, teams) {
 
     const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
     const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
-    gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${
-      awayTeam?.abbreviation || "?"
-    }`;
+    gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${awayTeam?.abbreviation || "?"
+      }`;
 
     const gameId = game.id;
     const pickKey = `match_${gameId}_pick`;
     const userPick = entry[pickKey];
 
     // If user's pick is not in the running anymore
-    if (userPick != game.team_1_id && userPick != game.team_2_id) {
-      selectedPick.src = 'dash.svg';
+    if (userPick !== game.team_1_id && userPick !== game.team_2_id) {
+      selectedPick.src = "dash.svg";
       selectedPick.alt = "Pick no longer in play";
       selectedPick.classList.add("dash-icon");
     } else {
@@ -255,7 +254,7 @@ function createRow(entry, tr, games, teams) {
       }
     }
     tr.appendChild(gameTd);
-  });
+  }
 }
 
 const fieldset = document.querySelector("fieldset");
@@ -278,8 +277,8 @@ function clearHeaders() {
 }
 
 async function renderFields() {
-  let [_, members, series] = await fetchData();
-  let games = series.game.series_results;
+  const [_, members, series] = await fetchData();
+  const games = series.game.series_results;
   const firstRoundGames = games.filter((game) => game.round_sequence === 1);
   const secondRoundGames = games.filter((game) => game.round_sequence === 2);
   const conferenceFinals = games.filter((game) => game.round_sequence === 3);
@@ -287,7 +286,7 @@ async function renderFields() {
   // Remove old event listeners before clearing fieldset
   const oldRadios = fieldset.querySelectorAll('input[type="radio"]');
   for (const radio of oldRadios) {
-    radio.removeEventListener('change', handleRoundChange);
+    radio.removeEventListener("change", handleRoundChange);
   }
 
   fieldset.innerHTML = "<legend>Valitse kierros</legend>";
@@ -344,7 +343,7 @@ function createRoundSelector(label, name, fieldset) {
   labelNode.htmlFor = name;
 
   // Use addEventListener instead of onchange property
-  radio.addEventListener('change', handleRoundChange);
+  radio.addEventListener("change", handleRoundChange);
   radio.disabled = true;
 
   wrapper.appendChild(labelNode);
@@ -377,8 +376,8 @@ async function fetchWithTimeout(url, timeout = 5000) {
 
     return await response.json();
   } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timed out');
+    if (error.name === "AbortError") {
+      throw new Error("Request timed out");
     }
     throw error;
   }
@@ -389,7 +388,7 @@ async function fetchData() {
     if (ENTRIES_DATA === null) {
       const entriesResponse = await fetchWithTimeout(ENTRIES_URL);
       if (!entriesResponse?.entries) {
-        throw new Error('Invalid entries data received from server');
+        throw new Error("Invalid entries data received from server");
       }
       ENTRIES_DATA = entriesResponse.entries;
     }
@@ -397,7 +396,7 @@ async function fetchData() {
     if (MEMBERS_DATA === null) {
       const membersResponse = await fetchWithTimeout(MEMBERS_URL);
       if (!membersResponse?.members) {
-        throw new Error('Invalid members data received from server');
+        throw new Error("Invalid members data received from server");
       }
       MEMBERS_DATA = membersResponse.members;
     }
@@ -405,7 +404,7 @@ async function fetchData() {
     if (SERIES_DATA === null) {
       SERIES_DATA = await fetchWithTimeout(SERIES_URL);
       if (!SERIES_DATA?.game?.series_results) {
-        throw new Error('Invalid series data received from server');
+        throw new Error("Invalid series data received from server");
       }
     }
 
@@ -415,23 +414,24 @@ async function fetchData() {
           Number.parseInt(prev.points) < Number.parseInt(curr.points)
             ? curr
             : prev,
-        ENTRIES_DATA[0]
+        ENTRIES_DATA[0],
       );
     }
 
     return [ENTRIES_DATA, MEMBERS_DATA, SERIES_DATA];
   } catch (error) {
-    console.error('Error fetching data:', error);
-    let errorMessage = 'Failed to load data. ';
+    console.error("Error fetching data:", error);
+    let errorMessage = "Failed to load data. ";
 
-    if (error.message === 'Request timed out') {
-      errorMessage += 'The server is taking too long to respond. Please try again later.';
-    } else if (error.message.includes('Invalid')) {
-      errorMessage += 'The server returned unexpected data.';
+    if (error.message === "Request timed out") {
+      errorMessage +=
+        "The server is taking too long to respond. Please try again later.";
+    } else if (error.message.includes("Invalid")) {
+      errorMessage += "The server returned unexpected data.";
     } else if (!navigator.onLine) {
-      errorMessage += 'Please check your internet connection.';
+      errorMessage += "Please check your internet connection.";
     } else {
-      errorMessage += 'Please try again later.';
+      errorMessage += "Please try again later.";
     }
 
     showError(errorMessage);
@@ -468,11 +468,11 @@ async function renderTable(toDisplay) {
 
   const tbody = document.querySelector("tbody");
 
-  entries.forEach((entry) => {
-    let tr = document.createElement("tr");
+  for (const entry of entries) {
+    const tr = document.createElement("tr");
     createRow(entry, tr, roundToDisplay, teams);
     tbody.appendChild(tr);
-  });
+  }
 
   document.querySelector("table").style = "display: block";
   document.querySelector("#loading").style = "display: none";
@@ -482,9 +482,9 @@ async function renderTable(toDisplay) {
 renderFields().then(() => renderTable());
 
 function uniqueBy(array, key) {
-  let uniques = [];
-  for (let idx in array) {
-    let obj = array[idx];
+  const uniques = [];
+  for (const idx in array) {
+    const obj = array[idx];
     if (uniques.find((ex) => ex[key] == obj[key]) == undefined) {
       uniques.push(obj);
     }
