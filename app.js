@@ -214,8 +214,7 @@ function createRow(entry, tr, games, teams) {
 
     const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
     const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
-    gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${awayTeam?.abbreviation || "?"
-      }`;
+    gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${awayTeam?.abbreviation || "?"}`;
 
     const gameId = game.id;
     const pickKey = `match_${gameId}_pick`;
@@ -228,7 +227,7 @@ function createRow(entry, tr, games, teams) {
       selectedPick.classList.add("dash-icon");
     } else {
       const pickedTeam = teams.find(
-        (team) => team.team_id === Number.parseInt(userPick),
+        (team) => team.team_id === Number.parseInt(userPick)
       );
       selectedPick.src = getLogoUrl(pickedTeam.abbreviation);
       selectedPick.alt = pickedTeam.display_name;
