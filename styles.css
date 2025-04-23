@@ -103,11 +103,13 @@ div.series {
 }
 
 span {
-  color: rgb(10, 3, 61);
+  color: var(--text-color);
+  opacity: 0.8;
 }
 
 span.correct-games {
   font-weight: 900;
+  opacity: 1;
 }
 
 div.inner {
@@ -341,4 +343,8 @@ fieldset {
 
 .dash-icon path {
   fill: var(--text-color);
+}
+
+[data-theme="dark"] span {
+  opacity: 0.9;
 }
