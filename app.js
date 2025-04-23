@@ -222,7 +222,7 @@ function createRow(entry, tr, games, teams) {
     const userPick = entry[pickKey];
 
     // If user's pick is not in the running anymore
-    if (userPick !== game.team_1_id && userPick !== game.team_2_id) {
+    if (userPick != game.team_1_id && userPick != game.team_2_id) {
       selectedPick.src = "dash.svg";
       selectedPick.alt = "Pick no longer in play";
       selectedPick.classList.add("dash-icon");
