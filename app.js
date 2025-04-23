@@ -99,6 +99,12 @@ function hasFinished(series) {
   return series.every((serie) => serie.is_scored);
 }
 
+function getLogoUrl(abbreviation) {
+  const theme = document.documentElement.getAttribute("data-theme");
+  const variant = theme === "dark" ? "dark" : "light";
+  return `${LOGO_BASE}${abbreviation}_${variant}.svg`;
+}
+
 /**
  * Adds dynamic table header cells for series matchups
  * in form of "[homeLogo] - [awayLogo]"
@@ -119,16 +125,12 @@ function createHeaders(games, teams) {
     const homeLogo = document.createElement("img");
     const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
     homeLogo.alt = homeTeam?.display_name || "?";
-    homeLogo.src = homeTeam
-      ? `${LOGO_BASE}${homeTeam.abbreviation}_light.svg`
-      : null;
+    homeLogo.src = homeTeam ? getLogoUrl(homeTeam.abbreviation) : null;
 
     const awayLogo = document.createElement("img");
     const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
     awayLogo.alt = awayTeam?.display_name || "?";
-    awayLogo.src = awayTeam
-      ? `${LOGO_BASE}${awayTeam.abbreviation}_light.svg`
-      : null;
+    awayLogo.src = awayTeam ? getLogoUrl(awayTeam.abbreviation) : null;
 
     const separator = document.createElement("span");
     separator.textContent = " - ";
@@ -186,7 +188,7 @@ function createRow(entry, tr, games, teams) {
   const championTeam = teams.find(
     (team) => team.team_id === Number.parseInt(champion_id),
   );
-  championLogo.src = `${LOGO_BASE}${championTeam.abbreviation}_light.svg`;
+  championLogo.src = getLogoUrl(championTeam.abbreviation);
   championLogo.alt = championTeam.display_name;
   championTd.appendChild(championLogo);
   championTd.classList.add("narrow");
@@ -212,8 +214,9 @@ function createRow(entry, tr, games, teams) {
 
     const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
     const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
-    gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${awayTeam?.abbreviation || "?"
-      }`;
+    gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${
+      awayTeam?.abbreviation || "?"
+    }`;
 
     const gameId = game.id;
     const pickKey = `match_${gameId}_pick`;
@@ -228,7 +231,7 @@ function createRow(entry, tr, games, teams) {
       const pickedTeam = teams.find(
         (team) => team.team_id === Number.parseInt(userPick),
       );
-      selectedPick.src = `${LOGO_BASE}${pickedTeam.abbreviation}_light.svg`;
+      selectedPick.src = getLogoUrl(pickedTeam.abbreviation);
       selectedPick.alt = pickedTeam.display_name;
     }
 
@@ -491,3 +494,19 @@ function uniqueBy(array, key) {
   }
   return uniques;
 }
+
+// Add theme change listener to update logos
+document.addEventListener("DOMContentLoaded", () => {
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.attributeName === "data-theme") {
+        renderTable();
+      }
+    }
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+});
