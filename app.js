@@ -214,9 +214,8 @@ function createRow(entry, tr, games, teams) {
 
     const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
     const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
-    gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${
-      awayTeam?.abbreviation || "?"
-    }`;
+    gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${awayTeam?.abbreviation || "?"
+      }`;
 
     const gameId = game.id;
     const pickKey = `match_${gameId}_pick`;
