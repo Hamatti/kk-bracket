@@ -208,21 +208,32 @@ fieldset {
   td[data-heading*=" - "] {
     display: flex;
     align-items: center;
+    gap: 1rem;
   }
 
   td[data-heading*=" - "]::before {
     min-width: auto;
-    margin-right: 1rem;
+    margin-right: 0;
     padding: 0.2rem 0.5rem;
     background: var(--table-stripe);
     border-radius: 4px;
     font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   td[data-heading*=" - "] .inner {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  td[data-heading*=" - "] .inner::before {
+    content: "Pick:";
+    font-weight: 500;
+    opacity: 0.7;
+    font-size: 0.9em;
   }
 
   td[data-heading*=" - "] img,
