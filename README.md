@@ -42,8 +42,11 @@ Kiitos Antille CSS:stä joka mahdollistaa mobiilikäytön!
 
 Kiitos Alexille XSS-injektion torjumisesta!
 
+Kiitos Nikolle dark modesta ja koodi- sekä tyyliparannuksista!
+
 \* Koodiklinikka on vallan mukava suomalainen ohjelmistokehittäjien ja siitä kiinnostuneiden yhteisö. Meitä on reilu 5000 Slackissa ja #penkkiurheilu-kanavalla seurataan lätkää suurella intohimolla.
 
 ### Koodiklinikan arkistot
+
 - [2024](https://kk-bracket.netlify.app/archive/2024/2024.html)
 - [2023](https://kk-bracket.netlify.app/archive/2023/2023.html)
