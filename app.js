@@ -64,7 +64,7 @@ h1.textContent = `${LEAGUE_DISPLAY_NAME} ${h1.textContent}`;
  */
 function isCorrectPick(entry, game) {
   // User picks are strings, winner_id is number. Lovely.
-  return parseInt(entry[`match_${game.id}_pick`]) === game.winner_id;
+  return Number.parseInt(entry[`match_${game.id}_pick`]) === game.winner_id;
 }
 
 /**
@@ -81,11 +81,11 @@ function isCorrectAmountGames(entry, game) {
   }
 
   // Amount of wins are strings. Lovely.
-  const t1_wins = parseInt(game.team_1_wins);
-  const t2_wins = parseInt(game.team_2_wins);
+  const t1_wins = Number.parseInt(game.team_1_wins);
+  const t2_wins = Number.parseInt(game.team_2_wins);
   const seriesLength = t1_wins + t2_wins;
   // Amount of wins is a string. Lovely.
-  const howManyGames = parseInt(entry[`match_${game.id}_match_played`]);
+  const howManyGames = Number.parseInt(entry[`match_${game.id}_match_played`]);
 
   return seriesLength === howManyGames;
 }
@@ -168,7 +168,7 @@ function createRow(entry, tr, games, teams) {
   tr.appendChild(possiblePointsTd);
 
   let rankHTML = rank;
-  if (parseInt(possible_points) < parseInt(LEADER_DATA.points)) {
+  if (Number.parseInt(possible_points) < Number.parseInt(LEADER_DATA.points)) {
     rankHTML = `<s title="eliminated">${rank}</s>`;
   }
   rankTd.innerHTML = rankHTML;
@@ -184,7 +184,7 @@ function createRow(entry, tr, games, teams) {
 
   let championLogo = document.createElement("img");
   const championTeam = teams.find(
-    (team) => team.team_id === parseInt(champion_id)
+    (team) => team.team_id === Number.parseInt(champion_id),
   );
   championLogo.src = `${LOGO_BASE}${championTeam.abbreviation}_light.svg`;
   championLogo.alt = championTeam.display_name;
@@ -226,7 +226,7 @@ function createRow(entry, tr, games, teams) {
       selectedPick.alt = "Pick no longer in play";
     } else {
       const pickedTeam = teams.find(
-        (team) => team.team_id === parseInt(userPick)
+        (team) => team.team_id === Number.parseInt(userPick),
       );
       selectedPick.src = `${LOGO_BASE}${pickedTeam.abbreviation}_light.svg`;
       selectedPick.alt = pickedTeam.display_name;
@@ -362,8 +362,10 @@ async function fetchData() {
   if (LEADER_DATA === null) {
     LEADER_DATA = ENTRIES_DATA.reduce(
       (prev, curr) =>
-        parseInt(prev.points) < parseInt(curr.points) ? curr : prev,
-      ENTRIES_DATA[0]
+        Number.parseInt(prev.points) < Number.parseInt(curr.points)
+          ? curr
+          : prev,
+      ENTRIES_DATA[0],
     );
   }
 
