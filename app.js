@@ -222,8 +222,9 @@ function createRow(entry, tr, games, teams) {
 
     // If user's pick is not in the running anymore
     if (userPick != game.team_1_id && userPick != game.team_2_id) {
-      selectedPick.src = `dash.svg`;
+      selectedPick.src = 'dash.svg';
       selectedPick.alt = "Pick no longer in play";
+      selectedPick.classList.add("dash-icon");
     } else {
       const pickedTeam = teams.find(
         (team) => team.team_id === Number.parseInt(userPick),
@@ -342,7 +343,8 @@ function createRoundSelector(label, name, fieldset) {
   labelNode.textContent = label;
   labelNode.htmlFor = name;
 
-  radio.onchange = handleRoundChange;
+  // Use addEventListener instead of onchange property
+  radio.addEventListener('change', handleRoundChange);
   radio.disabled = true;
 
   wrapper.appendChild(labelNode);

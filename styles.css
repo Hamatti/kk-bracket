@@ -216,3 +216,16 @@ fieldset {
 .light-icon {
   display: none;
 }
+
+.dash-icon {
+  color: var(--text-color);
+  filter: none;
+}
+
+[data-theme="dark"] .dash-icon {
+  filter: invert(1);
+}
+
+.dash-icon path {
+  fill: var(--text-color);
+}
