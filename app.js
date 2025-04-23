@@ -352,30 +352,89 @@ function createRoundSelector(label, name, fieldset) {
   return radio;
 }
 
+function showError(message) {
+  const loadingElement = document.querySelector("#loading");
+  loadingElement.textContent = `Error: ${message}`;
+  loadingElement.style.display = "block";
+  loadingElement.classList.add("error");
+  document.querySelector("table").style.display = "none";
+  fieldset.style.display = "none";
+}
+
+async function fetchWithTimeout(url, timeout = 5000) {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out');
+    }
+    throw error;
+  }
+}
+
 async function fetchData() {
-  if (ENTRIES_DATA === null) {
-    ENTRIES_DATA = (await fetch(ENTRIES_URL).then((res) => res.json())).entries;
-  }
+  try {
+    if (ENTRIES_DATA === null) {
+      const entriesResponse = await fetchWithTimeout(ENTRIES_URL);
+      if (!entriesResponse?.entries) {
+        throw new Error('Invalid entries data received from server');
+      }
+      ENTRIES_DATA = entriesResponse.entries;
+    }
 
-  if (MEMBERS_DATA === null) {
-    MEMBERS_DATA = (await fetch(MEMBERS_URL).then((res) => res.json())).members;
-  }
+    if (MEMBERS_DATA === null) {
+      const membersResponse = await fetchWithTimeout(MEMBERS_URL);
+      if (!membersResponse?.members) {
+        throw new Error('Invalid members data received from server');
+      }
+      MEMBERS_DATA = membersResponse.members;
+    }
 
-  if (SERIES_DATA === null) {
-    SERIES_DATA = await fetch(SERIES_URL).then((res) => res.json());
-  }
+    if (SERIES_DATA === null) {
+      SERIES_DATA = await fetchWithTimeout(SERIES_URL);
+      if (!SERIES_DATA?.game?.series_results) {
+        throw new Error('Invalid series data received from server');
+      }
+    }
 
-  if (LEADER_DATA === null) {
-    LEADER_DATA = ENTRIES_DATA.reduce(
-      (prev, curr) =>
-        Number.parseInt(prev.points) < Number.parseInt(curr.points)
-          ? curr
-          : prev,
-      ENTRIES_DATA[0],
-    );
-  }
+    if (LEADER_DATA === null && ENTRIES_DATA) {
+      LEADER_DATA = ENTRIES_DATA.reduce(
+        (prev, curr) =>
+          Number.parseInt(prev.points) < Number.parseInt(curr.points)
+            ? curr
+            : prev,
+        ENTRIES_DATA[0]
+      );
+    }
 
-  return [ENTRIES_DATA, MEMBERS_DATA, SERIES_DATA];
+    return [ENTRIES_DATA, MEMBERS_DATA, SERIES_DATA];
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    let errorMessage = 'Failed to load data. ';
+
+    if (error.message === 'Request timed out') {
+      errorMessage += 'The server is taking too long to respond. Please try again later.';
+    } else if (error.message.includes('Invalid')) {
+      errorMessage += 'The server returned unexpected data.';
+    } else if (!navigator.onLine) {
+      errorMessage += 'Please check your internet connection.';
+    } else {
+      errorMessage += 'Please try again later.';
+    }
+
+    showError(errorMessage);
+    throw error;
+  }
 }
 
 async function renderTable(toDisplay) {
