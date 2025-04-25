@@ -40,6 +40,19 @@ function initTheme() {
 // Initialize theme after DOM content is loaded
 document.addEventListener("DOMContentLoaded", initTheme);
 
+// Special case for Koodiklinikka 2025 bracket
+
+async function addMHopiaEntry(entries) {
+  const MHOPIA_URL =
+    "https://low6-nhl-brackets-prod.azurewebsites.net/entry/57939";
+  const mhopiaEntries = await fetchWithTimeout(MHOPIA_URL);
+  const allEntries = [...entries, { ...mhopiaEntries.entry, rank: "?" }];
+
+  allEntries.sort(
+    (a, b) => Number.parseInt(a.points) - Number.parseInt(b.points)
+  );
+  return allEntries;
+}
 const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
 const MEMBERS_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/search-members?search=&offset=0&limit=50`;
 const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
@@ -391,7 +404,12 @@ async function fetchData() {
       if (!entriesResponse?.entries) {
         throw new Error("Invalid entries data received from server");
       }
-      ENTRIES_DATA = entriesResponse.entries;
+
+      if (LEAGUE_ID === 28756) {
+        ENTRIES_DATA = await addMHopiaEntry(entriesResponse.entries);
+      } else {
+        ENTRIES_DATA = entriesResponse.entries;
+      }
     }
 
     if (MEMBERS_DATA === null) {
