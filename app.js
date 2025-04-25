@@ -49,7 +49,7 @@ async function addMHopiaEntry(entries) {
   const allEntries = [...entries, { ...mhopiaEntries.entry, rank: "?" }];
 
   allEntries.sort(
-    (a, b) => Number.parseInt(a.points) - Number.parseInt(b.points)
+    (a, b) => Number.parseInt(b.points) - Number.parseInt(a.points)
   );
   return allEntries;
 }
