@@ -48,5 +48,6 @@ Kiitos Nikolle dark modesta ja koodi- sekä tyyliparannuksista!
 
 ### Koodiklinikan arkistot
 
+- [2025](https://kk-bracket.netlify.app/archive/2025/2025.html)
 - [2024](https://kk-bracket.netlify.app/archive/2024/2024.html)
 - [2023](https://kk-bracket.netlify.app/archive/2023/2023.html)
