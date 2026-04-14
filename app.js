@@ -10,7 +10,7 @@
 // If you want to configure this to your league, change the LEAGUE_ID to match
 // your league id in NHL Bracket Challenge
 // and LEAGUE_DISPLAY_NAME to your league's name for the heading
-const LEAGUE_ID = 28756;
+const LEAGUE_ID = 19360;
 const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 /* END OF CONFIGURATION */
 
@@ -40,19 +40,6 @@ function initTheme() {
 // Initialize theme after DOM content is loaded
 document.addEventListener("DOMContentLoaded", initTheme);
 
-// Special case for Koodiklinikka 2025 bracket
-
-async function addMHopiaEntry(entries) {
-  const MHOPIA_URL =
-    "https://low6-nhl-brackets-prod.azurewebsites.net/entry/57939";
-  const mhopiaEntries = await fetchWithTimeout(MHOPIA_URL);
-  const allEntries = [...entries, { ...mhopiaEntries.entry, rank: "?" }];
-
-  allEntries.sort(
-    (a, b) => Number.parseInt(b.points) - Number.parseInt(a.points)
-  );
-  return allEntries;
-}
 const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
 const MEMBERS_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/search-members?search=&offset=0&limit=50`;
 const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
@@ -240,7 +227,7 @@ function createRow(entry, tr, games, teams) {
       selectedPick.classList.add("dash-icon");
     } else {
       const pickedTeam = teams.find(
-        (team) => team.team_id === Number.parseInt(userPick)
+        (team) => team.team_id === Number.parseInt(userPick),
       );
       selectedPick.src = getLogoUrl(pickedTeam.abbreviation);
       selectedPick.alt = pickedTeam.display_name;
@@ -405,11 +392,7 @@ async function fetchData() {
         throw new Error("Invalid entries data received from server");
       }
 
-      if (LEAGUE_ID === 28756) {
-        ENTRIES_DATA = await addMHopiaEntry(entriesResponse.entries);
-      } else {
-        ENTRIES_DATA = entriesResponse.entries;
-      }
+      ENTRIES_DATA = entriesResponse.entries;
     }
 
     if (MEMBERS_DATA === null) {
