@@ -859,12 +859,12 @@
         {
           "id": 101,
           "round_sequence": 1,
-          "is_scored": true,
+          "is_scored": false,
           "winner_id": null,
           "team_1_id": 21,
           "team_2_id": 55,
-          "team_1_wins": 0,
-          "team_2_wins": 0
+          "team_1_wins": 2,
+          "team_2_wins": 1
         },
         {
           "id": 102,
@@ -899,12 +899,12 @@
         {
           "id": 105,
           "round_sequence": 1,
-          "is_scored": true,
+          "is_scored": false,
           "winner_id": null,
           "team_1_id": 6,
           "team_2_id": 13,
-          "team_1_wins": 0,
-          "team_2_wins": 0
+          "team_1_wins": 3,
+          "team_2_wins": 2
         },
         {
           "id": 106,
@@ -929,12 +929,12 @@
         {
           "id": 108,
           "round_sequence": 1,
-          "is_scored": true,
+          "is_scored": false,
           "winner_id": null,
           "team_1_id": 1,
           "team_2_id": 3,
-          "team_1_wins": 0,
-          "team_2_wins": 0
+          "team_1_wins": 1,
+          "team_2_wins": 2
         },
         {
           "id": 201,
