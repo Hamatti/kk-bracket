@@ -469,8 +469,8 @@ async function renderTable(toDisplay) {
     tbody.appendChild(tr);
   }
 
-  document.querySelector("table").style = "display: block";
-  document.querySelector("#loading").style = "display: none";
+  document.querySelector("table").style.display = "block";
+  document.querySelector("#loading").style.display = "none";
   fieldset.style.display = "flex";
 }
 
