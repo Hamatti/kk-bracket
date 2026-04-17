@@ -110,12 +110,30 @@ function getLogoUrl(abbreviation) {
   return `${LOGO_BASE}${abbreviation}_${variant}.svg`;
 }
 
-// Swap logo src attributes in place instead of triggering a full table re-render
+// Look up a team by id and surface a warning when the lookup fails — the UI
+// falls back to a placeholder, but a silent miss usually means the API payload
+// drifted (new team id, truncated response) and we'd otherwise never notice.
+function findTeam(teams, teamId, context) {
+  const team = teams.find((t) => t.team_id === teamId);
+  if (!team) {
+    console.warn(`Team lookup failed for id=${teamId} (${context})`);
+  }
+  return team;
+}
+
+// Theme toggle only affects logo variants; swap src in place rather than
+// rebuilding the table.
 function updateLogoTheme(theme) {
   const newVariant = theme === "dark" ? "dark" : "light";
-  const oldVariant = newVariant === "dark" ? "light" : "dark";
+  // Anchor to end-of-src so an abbreviation that coincidentally contains
+  // "_dark"/"_light" can't trigger a spurious replace elsewhere in the URL.
+  const suffixPattern = /_(?:dark|light)\.svg$/;
   for (const img of document.querySelectorAll(`img[src*="${LOGO_BASE}"]`)) {
-    img.src = img.src.replace(`_${oldVariant}.svg`, `_${newVariant}.svg`);
+    if (!suffixPattern.test(img.src)) {
+      console.warn("Logo src did not match expected suffix pattern:", img.src);
+      continue;
+    }
+    img.src = img.src.replace(suffixPattern, `_${newVariant}.svg`);
   }
 }
 
@@ -491,14 +509,18 @@ renderFields()
   // fetchData's catch already surfaced the error via showError
   .catch(() => {});
 
-// Single DOMContentLoaded: theme toggle button + logo-swap observer
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("theme-toggle").addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme");
-    const next = current === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem("theme", next);
-  });
+  const themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    });
+  } else {
+    console.warn("#theme-toggle element missing; theme toggle disabled");
+  }
 
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
