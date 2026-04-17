@@ -156,14 +156,14 @@ function createHeaders(games, teams) {
     tr.appendChild(th);
 
     const homeLogo = document.createElement("img");
-    const homeTeam = teams.find((team) => team.team_id === game.team_1_id);
+    const homeTeam = findTeam(teams, game.team_1_id, `header team_1 of game ${game.id}`);
     homeLogo.alt = homeTeam?.display_name || "?";
-    homeLogo.src = homeTeam ? getLogoUrl(homeTeam.abbreviation) : null;
+    homeLogo.src = homeTeam ? getLogoUrl(homeTeam.abbreviation) : "invalid.svg";
 
     const awayLogo = document.createElement("img");
-    const awayTeam = teams.find((team) => team.team_id === game.team_2_id);
+    const awayTeam = findTeam(teams, game.team_2_id, `header team_2 of game ${game.id}`);
     awayLogo.alt = awayTeam?.display_name || "?";
-    awayLogo.src = awayTeam ? getLogoUrl(awayTeam.abbreviation) : null;
+    awayLogo.src = awayTeam ? getLogoUrl(awayTeam.abbreviation) : "invalid.svg";
 
     const separator = document.createElement("span");
     separator.textContent = " - ";
