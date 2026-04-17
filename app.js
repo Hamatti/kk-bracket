@@ -281,11 +281,13 @@ function clearHeaders() {
 }
 
 async function renderFields() {
-  const [_, members, series] = await fetchData();
+  const [, , series] = await fetchData();
   const games = series.game.series_results;
-  const firstRoundGames = games.filter((game) => game.round_sequence === 1);
-  const secondRoundGames = games.filter((game) => game.round_sequence === 2);
-  const conferenceFinals = games.filter((game) => game.round_sequence === 3);
+  const roundGames = [
+    games.filter((g) => g.round_sequence === 1),
+    games.filter((g) => g.round_sequence === 2),
+    games.filter((g) => g.round_sequence === 3),
+  ];
 
   // Remove old event listeners before clearing fieldset
   const oldRadios = fieldset.querySelectorAll('input[type="radio"]');
@@ -294,39 +296,27 @@ async function renderFields() {
   }
 
   fieldset.innerHTML = "<legend>Valitse kierros</legend>";
-  const r1 = createRoundSelector("1. kierros", "first", fieldset);
-  const r2 = createRoundSelector("2. kierros", "second", fieldset);
-  const r3 = createRoundSelector("Konferenssifinaalit", "third", fieldset);
-  const r4 = createRoundSelector("Stanley Cup", "fourth", fieldset);
-  if (!hasFinished(firstRoundGames)) {
-    r1.disabled = false;
-    r1.checked = true;
-    r1.parentNode.classList.remove("disabled");
-  } else if (!hasFinished(secondRoundGames)) {
-    r1.disabled = false;
-    r2.disabled = false;
-    r2.checked = true;
-    r1.parentNode.classList.remove("disabled");
-    r2.parentNode.classList.remove("disabled");
-  } else if (!hasFinished(conferenceFinals)) {
-    r1.disabled = false;
-    r2.disabled = false;
-    r3.disabled = false;
-    r3.checked = true;
-    r1.parentNode.classList.remove("disabled");
-    r2.parentNode.classList.remove("disabled");
-    r3.parentNode.classList.remove("disabled");
-  } else {
-    r1.disabled = false;
-    r2.disabled = false;
-    r3.disabled = false;
-    r4.disabled = false;
-    r4.checked = true;
-    r1.parentNode.classList.remove("disabled");
-    r2.parentNode.classList.remove("disabled");
-    r3.parentNode.classList.remove("disabled");
-    r4.parentNode.classList.remove("disabled");
+  const radios = [
+    createRoundSelector("1. kierros", "first", fieldset),
+    createRoundSelector("2. kierros", "second", fieldset),
+    createRoundSelector("Konferenssifinaalit", "third", fieldset),
+    createRoundSelector("Stanley Cup", "fourth", fieldset),
+  ];
+
+  // Default to Stanley Cup (index 3) if all earlier rounds are finished
+  let activeIndex = roundGames.length;
+  for (let i = 0; i < roundGames.length; i++) {
+    if (!hasFinished(roundGames[i])) {
+      activeIndex = i;
+      break;
+    }
   }
+
+  for (let i = 0; i <= activeIndex; i++) {
+    radios[i].disabled = false;
+    radios[i].parentNode.classList.remove("disabled");
+  }
+  radios[activeIndex].checked = true;
 }
 
 function handleRoundChange(ev) {
