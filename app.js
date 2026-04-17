@@ -284,7 +284,7 @@ function clearHeaders() {
 }
 
 async function renderFields() {
-  const [, , series] = await fetchData();
+  const [, series] = await fetchData();
   const games = series.game.series_results;
   const roundGames = [
     games.filter((g) => g.round_sequence === 1),
