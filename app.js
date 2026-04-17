@@ -198,8 +198,7 @@ function createRow(entry, tr, games, teams) {
   // Bit of entry name cleaning up as the software default's to
   // format of "User name's bracket 1" and that's ugly
   const entryNameCleaned = entry_name.replace(/'s bracket \d+/, "");
-  const nameTdText = document.createTextNode(entryNameCleaned);
-  nameTd.appendChild(nameTdText);
+  nameTd.appendChild(document.createTextNode(entryNameCleaned));
   nameTd.classList.add("wide");
   nameTd.dataset.heading = "name";
 
