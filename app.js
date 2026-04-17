@@ -101,6 +101,8 @@ function isCorrectAmountGames(entry, game) {
  * @returns all series have finished
  */
 function hasFinished(series) {
+  // Empty is not "finished" — vacuous `every` would otherwise skip the round silently
+  if (series.length === 0) return false;
   return series.every((serie) => serie.is_scored);
 }
 
