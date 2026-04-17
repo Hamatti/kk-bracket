@@ -433,6 +433,9 @@ async function fetchData() {
       errorMessage += "The server returned unexpected data.";
     } else if (!navigator.onLine) {
       errorMessage += "Please check your internet connection.";
+    } else if (USE_MOCK) {
+      errorMessage +=
+        "Mock server unreachable. Run `npx json-server tests/mock-api.json`.";
     } else {
       errorMessage += "Please try again later.";
     }
