@@ -382,20 +382,25 @@ async function fetchWithTimeout(url, timeout = 5000) {
 
 async function fetchData() {
   try {
-    if (ENTRIES_DATA === null) {
+    // Work on locals so a failure mid-pipeline leaves globals untouched and a
+    // retry re-fetches cleanly instead of caching partially-normalized state.
+    let entries = ENTRIES_DATA;
+    let series = SERIES_DATA;
+
+    if (entries === null) {
       const entriesResponse = await fetchWithTimeout(ENTRIES_URL);
       if (!entriesResponse?.entries) {
         throw new Error("Invalid entries data received from server");
       }
-      ENTRIES_DATA = entriesResponse.entries;
+      entries = entriesResponse.entries;
     }
 
-    if (SERIES_DATA === null) {
+    if (series === null) {
       const rawSeries = await fetchWithTimeout(SERIES_URL);
       if (!rawSeries?.game?.series_results) {
         throw new Error("Invalid series data received from server");
       }
-      SERIES_DATA = {
+      series = {
         ...rawSeries,
         game: {
           ...rawSeries.game,
@@ -403,14 +408,18 @@ async function fetchData() {
           teams: rawSeries.game.teams.map(normalizeTeam),
         },
       };
-      const gameIds = SERIES_DATA.game.series_results.map((g) => g.id);
-      ENTRIES_DATA = ENTRIES_DATA.map((e) => normalizeEntry(e, gameIds));
+      const gameIds = series.game.series_results.map((g) => g.id);
+      entries = entries.map((e) => normalizeEntry(e, gameIds));
     }
 
-    if (LEADER_DATA === null && ENTRIES_DATA) {
-      // Leaderboard endpoint returns entries sorted by points descending
-      LEADER_DATA = ENTRIES_DATA[0];
+    if (entries.length === 0) {
+      throw new Error("Invalid entries data: empty leaderboard");
     }
+
+    ENTRIES_DATA = entries;
+    SERIES_DATA = series;
+    // Leaderboard endpoint returns entries sorted by points descending
+    LEADER_DATA = entries[0];
 
     return [ENTRIES_DATA, SERIES_DATA];
   } catch (error) {
