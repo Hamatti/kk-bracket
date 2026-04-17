@@ -221,7 +221,7 @@ function createRow(entry, tr, games, teams) {
   nameTd.dataset.heading = "name";
 
   const championLogo = document.createElement("img");
-  const championTeam = teams.find((team) => team.team_id === champion_id);
+  const championTeam = findTeam(teams, champion_id, `champion pick for entry ${rank}`);
   championLogo.src = championTeam ? getLogoUrl(championTeam.abbreviation) : "invalid.svg";
   championLogo.alt = championTeam?.display_name || "?";
   championTd.appendChild(championLogo);
@@ -244,8 +244,8 @@ function createRow(entry, tr, games, teams) {
 
     gameTd.classList.add("narrow", "logo");
 
-    const homeTeam = teams.find((team) => team.team_id === game.team_1_id);
-    const awayTeam = teams.find((team) => team.team_id === game.team_2_id);
+    const homeTeam = findTeam(teams, game.team_1_id, `row team_1 of game ${game.id}`);
+    const awayTeam = findTeam(teams, game.team_2_id, `row team_2 of game ${game.id}`);
     gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${awayTeam?.abbreviation || "?"}`;
 
     const userPick = entry[`match_${game.id}_pick`];
@@ -256,7 +256,7 @@ function createRow(entry, tr, games, teams) {
       selectedPick.alt = "Pick no longer in play";
       selectedPick.classList.add("dash-icon");
     } else {
-      const pickedTeam = teams.find((team) => team.team_id === userPick);
+      const pickedTeam = findTeam(teams, userPick, `pick for entry ${rank} game ${game.id}`);
       selectedPick.src = pickedTeam ? getLogoUrl(pickedTeam.abbreviation) : "invalid.svg";
       selectedPick.alt = pickedTeam?.display_name || "?";
     }
