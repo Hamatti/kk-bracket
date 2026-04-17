@@ -6,31 +6,14 @@ const LEAGUE_ID = 19360;
 const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 /* END OF CONFIGURATION */
 
-// Theme switching functionality
-function initTheme() {
-  const themeToggle = document.getElementById("theme-toggle");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const storedTheme = localStorage.getItem("theme");
-
-  // Set initial theme
-  if (storedTheme) {
-    document.documentElement.setAttribute("data-theme", storedTheme);
-  } else if (prefersDark) {
-    document.documentElement.setAttribute("data-theme", "dark");
-  }
-
-  // Handle theme toggle
-  themeToggle.addEventListener("click", () => {
-    const currentTheme = document.documentElement.getAttribute("data-theme");
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
-
-    document.documentElement.setAttribute("data-theme", newTheme);
-    localStorage.setItem("theme", newTheme);
-  });
+// Set theme synchronously before first render to avoid logo variant flash
+const storedTheme = localStorage.getItem("theme");
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+if (storedTheme) {
+  document.documentElement.setAttribute("data-theme", storedTheme);
+} else if (prefersDark) {
+  document.documentElement.setAttribute("data-theme", "dark");
 }
-
-// Initialize theme after DOM content is loaded
-document.addEventListener("DOMContentLoaded", initTheme);
 
 const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
 const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
@@ -120,6 +103,15 @@ function getLogoUrl(abbreviation) {
   const theme = document.documentElement.getAttribute("data-theme");
   const variant = theme === "dark" ? "dark" : "light";
   return `${LOGO_BASE}${abbreviation}_${variant}.svg`;
+}
+
+// Swap logo src attributes in place instead of triggering a full table re-render
+function updateLogoTheme(theme) {
+  const newVariant = theme === "dark" ? "dark" : "light";
+  const oldVariant = newVariant === "dark" ? "light" : "dark";
+  for (const img of document.querySelectorAll(`img[src*="${LOGO_BASE}"]`)) {
+    img.src = img.src.replace(`_${oldVariant}.svg`, `_${newVariant}.svg`);
+  }
 }
 
 /**
@@ -483,23 +475,19 @@ async function renderTable(toDisplay) {
 
 renderFields().then(() => renderTable());
 
-function uniqueBy(array, key) {
-  const uniques = [];
-  for (const idx in array) {
-    const obj = array[idx];
-    if (uniques.find((ex) => ex[key] == obj[key]) == undefined) {
-      uniques.push(obj);
-    }
-  }
-  return uniques;
-}
-
-// Add theme change listener to update logos
+// Single DOMContentLoaded: theme toggle button + logo-swap observer
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+  });
+
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.attributeName === "data-theme") {
-        renderTable();
+        updateLogoTheme(document.documentElement.getAttribute("data-theme"));
       }
     }
   });
