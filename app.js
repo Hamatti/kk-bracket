@@ -365,12 +365,11 @@ function showError(message) {
 }
 
 async function fetchWithTimeout(url, timeout = 5000) {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+  try {
     const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -382,6 +381,8 @@ async function fetchWithTimeout(url, timeout = 5000) {
       throw new Error("Request timed out");
     }
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
