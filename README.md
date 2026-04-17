@@ -44,7 +44,7 @@ Kiitos Alexille XSS-injektion torjumisesta!
 
 Kiitos Nikolle dark modesta ja koodi- sekä tyyliparannuksista!
 
-\* Koodiklinikka on vallan mukava suomalainen ohjelmistokehittäjien ja siitä kiinnostuneiden yhteisö. Meitä on reilu 5000 Slackissa ja #penkkiurheilu-kanavalla seurataan lätkää suurella intohimolla.
+\* Koodiklinikka on vallan mukava suomalainen ohjelmistokehittäjien ja siitä kiinnostuneiden yhteisö. Meitä on reilu 8000 Slackissa ja #penkkiurheilu-kanavalla seurataan lätkää suurella intohimolla.
 
 ### Koodiklinikan arkistot
 
