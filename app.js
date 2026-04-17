@@ -191,8 +191,7 @@ function createRow(entry, tr, games, teams) {
   championLogo.src = getLogoUrl(championTeam.abbreviation);
   championLogo.alt = championTeam.display_name;
   championTd.appendChild(championLogo);
-  championTd.classList.add("narrow");
-  championTd.classList.add("logo");
+  championTd.classList.add("narrow", "logo");
   championTd.dataset.heading = "champion";
 
   pointsTd.innerHTML = points;
@@ -209,8 +208,7 @@ function createRow(entry, tr, games, teams) {
     const selectedPick = document.createElement("img");
     inner.appendChild(selectedPick);
 
-    gameTd.classList.add("narrow");
-    gameTd.classList.add("logo");
+    gameTd.classList.add("narrow", "logo");
 
     const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
     const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
