@@ -411,13 +411,8 @@ async function fetchData() {
     }
 
     if (LEADER_DATA === null && ENTRIES_DATA) {
-      LEADER_DATA = ENTRIES_DATA.reduce(
-        (prev, curr) =>
-          Number.parseInt(prev.points) < Number.parseInt(curr.points)
-            ? curr
-            : prev,
-        ENTRIES_DATA[0],
-      );
+      // Leaderboard endpoint returns entries sorted by points descending
+      LEADER_DATA = ENTRIES_DATA[0];
     }
 
     return [ENTRIES_DATA, MEMBERS_DATA, SERIES_DATA];
