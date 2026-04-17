@@ -15,8 +15,13 @@ if (storedTheme) {
   document.documentElement.setAttribute("data-theme", "dark");
 }
 
-const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
-const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
+const USE_MOCK = new URLSearchParams(window.location.search).has("mock");
+const ENTRIES_URL = USE_MOCK
+  ? "http://localhost:3000/picks"
+  : `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
+const SERIES_URL = USE_MOCK
+  ? "http://localhost:3000/results"
+  : "https://low6-nhl-brackets-prod.azurewebsites.net/game";
 const LOGO_BASE = "https://assets.nhle.com/logos/nhl/svg/";
 
 let ENTRIES_DATA = null;
