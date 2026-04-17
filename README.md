@@ -28,11 +28,18 @@ Saa tehä pullareita jotka lisää/korjaa/parantelee. Erityisesti jos teet siit�
 
 ## Lokaalia testausta
 
-Jos tahtoo testailla lokaalisti eri tiloja ja tilanteita, `tests/`-kansiosta löytyy mock API entryille ja sarjojen tilanteille.
+Jos tahtoo testailla lokaalisti eri tiloja ja tilanteita, `tests/`-kansiosta löytyy mock-fikstuurit:
 
-Ajamalla `npx json-server tests/mock-api.json`, saa käyttöönsä rajapinnan `http://localhost:3000`, jolla endpointit `/picks` ja `/results`. Korvaa `app.js`:ssä `ENTRIES_URL`:ksi `http://localhost:3000/picks` ja `SERIES_URL`:ksi `http://localhost:3000/results`.
+- `mock-api.json` — 1. kierros kesken (kolme sarjaa auki)
+- `mock-api-completed.json` — koko turnaus pelattu (BOS voittaa Cupin)
 
-Näin voi kokeilla eri skenaarioita vaihtamalla mock-api.jsonin arvoja. Muista käynnistää `npx json-server tests/mock-api.json` uusiksi muutosten välillä.
+Käynnistä json-server halutulla fikstuurilla ja avaa `index.html?mock` selaimessa — `?mock`-parametri vaihtaa `app.js`:n URLit automaattisesti osoittamaan `http://localhost:3000`:een.
+
+```
+npx json-server tests/mock-api.json
+```
+
+Muista käynnistää `json-server` uusiksi kun vaihdat fikstuuria (se ei hot-reloadaa).
 
 ## Muut huomiot
 
@@ -44,7 +51,7 @@ Kiitos Alexille XSS-injektion torjumisesta!
 
 Kiitos Nikolle dark modesta ja koodi- sekä tyyliparannuksista!
 
-\* Koodiklinikka on vallan mukava suomalainen ohjelmistokehittäjien ja siitä kiinnostuneiden yhteisö. Meitä on reilu 5000 Slackissa ja #penkkiurheilu-kanavalla seurataan lätkää suurella intohimolla.
+\* Koodiklinikka on vallan mukava suomalainen ohjelmistokehittäjien ja siitä kiinnostuneiden yhteisö. Meitä on reilu 8000 Slackissa ja #penkkiurheilu-kanavalla seurataan lätkää suurella intohimolla.
 
 ### Koodiklinikan arkistot
 

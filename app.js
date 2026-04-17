@@ -1,11 +1,3 @@
-/* A general note: this file uses a lot of == instead of === for a purpose.
- * The API is very inconsistent in how it stores information:
- * sometimes its numbers and sometimes numeric strings.
- *
- * Don't blindly refactor them to === or you'll make a mess.
- * A better approach would be to actually map what types are used and where.
- */
-
 /* CONFIGURATION */
 // If you want to configure this to your league, change the LEAGUE_ID to match
 // your league id in NHL Bracket Challenge
@@ -14,39 +6,25 @@ const LEAGUE_ID = 19360;
 const LEAGUE_DISPLAY_NAME = "Koodiklinikan";
 /* END OF CONFIGURATION */
 
-// Theme switching functionality
-function initTheme() {
-  const themeToggle = document.getElementById("theme-toggle");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const storedTheme = localStorage.getItem("theme");
-
-  // Set initial theme
-  if (storedTheme) {
-    document.documentElement.setAttribute("data-theme", storedTheme);
-  } else if (prefersDark) {
-    document.documentElement.setAttribute("data-theme", "dark");
-  }
-
-  // Handle theme toggle
-  themeToggle.addEventListener("click", () => {
-    const currentTheme = document.documentElement.getAttribute("data-theme");
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
-
-    document.documentElement.setAttribute("data-theme", newTheme);
-    localStorage.setItem("theme", newTheme);
-  });
+// Set theme synchronously before first render to avoid logo variant flash
+const storedTheme = localStorage.getItem("theme");
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+if (storedTheme) {
+  document.documentElement.setAttribute("data-theme", storedTheme);
+} else if (prefersDark) {
+  document.documentElement.setAttribute("data-theme", "dark");
 }
 
-// Initialize theme after DOM content is loaded
-document.addEventListener("DOMContentLoaded", initTheme);
-
-const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
-const MEMBERS_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/search-members?search=&offset=0&limit=50`;
-const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
+const USE_MOCK = new URLSearchParams(window.location.search).has("mock");
+const ENTRIES_URL = USE_MOCK
+  ? "http://localhost:3000/picks"
+  : `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
+const SERIES_URL = USE_MOCK
+  ? "http://localhost:3000/results"
+  : "https://low6-nhl-brackets-prod.azurewebsites.net/game";
 const LOGO_BASE = "https://assets.nhle.com/logos/nhl/svg/";
 
 let ENTRIES_DATA = null;
-let MEMBERS_DATA = null;
 let SERIES_DATA = null;
 let LEADER_DATA = null;
 
@@ -56,6 +34,42 @@ title.textContent = `${LEAGUE_DISPLAY_NAME} ${title.textContent}`;
 const h1 = document.querySelector("h1");
 h1.textContent = `${LEAGUE_DISPLAY_NAME} ${h1.textContent}`;
 
+// Normalize API fields to numbers at the fetch boundary so the rest of the
+// code can use === throughout.
+function normalizeGame(game) {
+  return {
+    ...game,
+    id: Number(game.id),
+    team_1_id: Number(game.team_1_id),
+    team_2_id: Number(game.team_2_id),
+    winner_id: game.winner_id != null ? Number(game.winner_id) : null,
+    team_1_wins: Number(game.team_1_wins),
+    team_2_wins: Number(game.team_2_wins),
+    round_sequence: Number(game.round_sequence),
+  };
+}
+
+function normalizeTeam(team) {
+  return { ...team, team_id: Number(team.team_id) };
+}
+
+function normalizeEntry(entry, gameIds) {
+  const norm = {
+    ...entry,
+    rank: Number(entry.rank),
+    points: Number(entry.points),
+    possible_points: Number(entry.possible_points),
+    champion_id: Number(entry.champion_id),
+  };
+  for (const id of gameIds) {
+    if (`match_${id}_pick` in norm)
+      norm[`match_${id}_pick`] = Number(norm[`match_${id}_pick`]);
+    if (`match_${id}_match_played` in norm)
+      norm[`match_${id}_match_played`] = Number(norm[`match_${id}_match_played`]);
+  }
+  return norm;
+}
+
 /**
  * Checks if user's pick for a given series is correct
  * @param {object} entry User's entry
@@ -63,8 +77,7 @@ h1.textContent = `${LEAGUE_DISPLAY_NAME} ${h1.textContent}`;
  * @returns user's pick matches the result of game
  */
 function isCorrectPick(entry, game) {
-  // User picks are strings, winner_id is number. Lovely.
-  return Number.parseInt(entry[`match_${game.id}_pick`]) === game.winner_id;
+  return entry[`match_${game.id}_pick`] === game.winner_id;
 }
 
 /**
@@ -75,19 +88,11 @@ function isCorrectPick(entry, game) {
  * @returns
  */
 function isCorrectAmountGames(entry, game) {
-  // If series isn't finished yet, early return false
   if (!game.is_scored) {
     return false;
   }
-
-  // Amount of wins are strings. Lovely.
-  const t1_wins = Number.parseInt(game.team_1_wins);
-  const t2_wins = Number.parseInt(game.team_2_wins);
-  const seriesLength = t1_wins + t2_wins;
-  // Amount of wins is a string. Lovely.
-  const howManyGames = Number.parseInt(entry[`match_${game.id}_match_played`]);
-
-  return seriesLength === howManyGames;
+  const seriesLength = game.team_1_wins + game.team_2_wins;
+  return seriesLength === entry[`match_${game.id}_match_played`];
 }
 
 /**
@@ -96,6 +101,8 @@ function isCorrectAmountGames(entry, game) {
  * @returns all series have finished
  */
 function hasFinished(series) {
+  // Empty is not "finished" — vacuous `every` would otherwise skip the round silently
+  if (series.length === 0) return false;
   return series.every((serie) => serie.is_scored);
 }
 
@@ -103,6 +110,33 @@ function getLogoUrl(abbreviation) {
   const theme = document.documentElement.getAttribute("data-theme");
   const variant = theme === "dark" ? "dark" : "light";
   return `${LOGO_BASE}${abbreviation}_${variant}.svg`;
+}
+
+// Look up a team by id and surface a warning when the lookup fails — the UI
+// falls back to a placeholder, but a silent miss usually means the API payload
+// drifted (new team id, truncated response) and we'd otherwise never notice.
+function findTeam(teams, teamId, context) {
+  const team = teams.find((t) => t.team_id === teamId);
+  if (!team) {
+    console.warn(`Team lookup failed for id=${teamId} (${context})`);
+  }
+  return team;
+}
+
+// Theme toggle only affects logo variants; swap src in place rather than
+// rebuilding the table.
+function updateLogoTheme(theme) {
+  const newVariant = theme === "dark" ? "dark" : "light";
+  // Anchor to end-of-src so an abbreviation that coincidentally contains
+  // "_dark"/"_light" can't trigger a spurious replace elsewhere in the URL.
+  const suffixPattern = /_(?:dark|light)\.svg$/;
+  for (const img of document.querySelectorAll(`img[src*="${LOGO_BASE}"]`)) {
+    if (!suffixPattern.test(img.src)) {
+      console.warn("Logo src did not match expected suffix pattern:", img.src);
+      continue;
+    }
+    img.src = img.src.replace(suffixPattern, `_${newVariant}.svg`);
+  }
 }
 
 /**
@@ -116,6 +150,7 @@ function createHeaders(games, teams) {
   const tr = document.querySelector("thead > tr");
   for (const game of games) {
     const th = document.createElement("th");
+    th.scope = "col";
     const div = document.createElement("div");
     div.classList.add("series");
     th.appendChild(div);
@@ -123,14 +158,14 @@ function createHeaders(games, teams) {
     tr.appendChild(th);
 
     const homeLogo = document.createElement("img");
-    const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
+    const homeTeam = findTeam(teams, game.team_1_id, `header team_1 of game ${game.id}`);
     homeLogo.alt = homeTeam?.display_name || "?";
-    homeLogo.src = homeTeam ? getLogoUrl(homeTeam.abbreviation) : null;
+    homeLogo.src = homeTeam ? getLogoUrl(homeTeam.abbreviation) : "invalid.svg";
 
     const awayLogo = document.createElement("img");
-    const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
+    const awayTeam = findTeam(teams, game.team_2_id, `header team_2 of game ${game.id}`);
     awayLogo.alt = awayTeam?.display_name || "?";
-    awayLogo.src = awayTeam ? getLogoUrl(awayTeam.abbreviation) : null;
+    awayLogo.src = awayTeam ? getLogoUrl(awayTeam.abbreviation) : "invalid.svg";
 
     const separator = document.createElement("span");
     separator.textContent = " - ";
@@ -169,36 +204,36 @@ function createRow(entry, tr, games, teams) {
   tr.appendChild(pointsTd);
   tr.appendChild(possiblePointsTd);
 
-  let rankHTML = rank;
-  if (Number.parseInt(possible_points) < Number.parseInt(LEADER_DATA.points)) {
-    rankHTML = `<s title="eliminated">${rank}</s>`;
+  if (possible_points < LEADER_DATA.points) {
+    const s = document.createElement("s");
+    s.title = "eliminated";
+    s.setAttribute("aria-label", `${rank}, eliminated`);
+    s.textContent = rank;
+    rankTd.appendChild(s);
+  } else {
+    rankTd.textContent = rank;
   }
-  rankTd.innerHTML = rankHTML;
   rankTd.dataset.heading = "rank";
 
   // Bit of entry name cleaning up as the software default's to
   // format of "User name's bracket 1" and that's ugly
   const entryNameCleaned = entry_name.replace(/'s bracket \d+/, "");
-  const nameTdText = document.createTextNode(entryNameCleaned);
-  nameTd.appendChild(nameTdText);
+  nameTd.appendChild(document.createTextNode(entryNameCleaned));
   nameTd.classList.add("wide");
   nameTd.dataset.heading = "name";
 
   const championLogo = document.createElement("img");
-  const championTeam = teams.find(
-    (team) => team.team_id === Number.parseInt(champion_id),
-  );
-  championLogo.src = getLogoUrl(championTeam.abbreviation);
-  championLogo.alt = championTeam.display_name;
+  const championTeam = findTeam(teams, champion_id, `champion pick for entry ${rank}`);
+  championLogo.src = championTeam ? getLogoUrl(championTeam.abbreviation) : "invalid.svg";
+  championLogo.alt = championTeam?.display_name || "?";
   championTd.appendChild(championLogo);
-  championTd.classList.add("narrow");
-  championTd.classList.add("logo");
+  championTd.classList.add("narrow", "logo");
   championTd.dataset.heading = "champion";
 
-  pointsTd.innerHTML = points;
+  pointsTd.textContent = points;
   pointsTd.dataset.heading = "points";
 
-  possiblePointsTd.innerHTML = possible_points;
+  possiblePointsTd.textContent = possible_points;
   possiblePointsTd.dataset.heading = "max points";
 
   for (const game of games) {
@@ -209,28 +244,23 @@ function createRow(entry, tr, games, teams) {
     const selectedPick = document.createElement("img");
     inner.appendChild(selectedPick);
 
-    gameTd.classList.add("narrow");
-    gameTd.classList.add("logo");
+    gameTd.classList.add("narrow", "logo");
 
-    const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
-    const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
+    const homeTeam = findTeam(teams, game.team_1_id, `row team_1 of game ${game.id}`);
+    const awayTeam = findTeam(teams, game.team_2_id, `row team_2 of game ${game.id}`);
     gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${awayTeam?.abbreviation || "?"}`;
 
-    const gameId = game.id;
-    const pickKey = `match_${gameId}_pick`;
-    const userPick = entry[pickKey];
+    const userPick = entry[`match_${game.id}_pick`];
 
     // If user's pick is not in the running anymore
-    if (userPick != game.team_1_id && userPick != game.team_2_id) {
+    if (userPick !== game.team_1_id && userPick !== game.team_2_id) {
       selectedPick.src = "dash.svg";
       selectedPick.alt = "Pick no longer in play";
       selectedPick.classList.add("dash-icon");
     } else {
-      const pickedTeam = teams.find(
-        (team) => team.team_id === Number.parseInt(userPick),
-      );
-      selectedPick.src = getLogoUrl(pickedTeam.abbreviation);
-      selectedPick.alt = pickedTeam.display_name;
+      const pickedTeam = findTeam(teams, userPick, `pick for entry ${rank} game ${game.id}`);
+      selectedPick.src = pickedTeam ? getLogoUrl(pickedTeam.abbreviation) : "invalid.svg";
+      selectedPick.alt = pickedTeam?.display_name || "?";
     }
 
     // If the series is finished, show which picks were right
@@ -269,20 +299,22 @@ function clearHeaders() {
   const thead = document.querySelector("thead");
   thead.innerHTML = `
   <tr>
-          <th>Sij.</th>
-          <th>Nimi</th>
-          <th>Mestari</th>
-          <th>Pist.</th>
-          <th>Max.</th>
-        </tr>`;
+    <th scope="col">Sij.</th>
+    <th scope="col">Nimi</th>
+    <th scope="col">Mestari</th>
+    <th scope="col">Pist.</th>
+    <th scope="col">Max.</th>
+  </tr>`;
 }
 
 async function renderFields() {
-  const [_, members, series] = await fetchData();
+  const [, series] = await fetchData();
   const games = series.game.series_results;
-  const firstRoundGames = games.filter((game) => game.round_sequence === 1);
-  const secondRoundGames = games.filter((game) => game.round_sequence === 2);
-  const conferenceFinals = games.filter((game) => game.round_sequence === 3);
+  const roundGames = [
+    games.filter((g) => g.round_sequence === 1),
+    games.filter((g) => g.round_sequence === 2),
+    games.filter((g) => g.round_sequence === 3),
+  ];
 
   // Remove old event listeners before clearing fieldset
   const oldRadios = fieldset.querySelectorAll('input[type="radio"]');
@@ -291,44 +323,28 @@ async function renderFields() {
   }
 
   fieldset.innerHTML = "<legend>Valitse kierros</legend>";
-  const r1 = createRoundSelector("1. kierros", "first", fieldset);
-  const r2 = createRoundSelector("2. kierros", "second", fieldset);
-  const r3 = createRoundSelector("Konferenssifinaalit", "third", fieldset);
-  const r4 = createRoundSelector("Stanley Cup", "fourth", fieldset);
-  if (!hasFinished(firstRoundGames)) {
-    r1.disabled = false;
-    r1.checked = true;
-    r1.parentNode.classList.remove("disabled");
-  } else if (!hasFinished(secondRoundGames)) {
-    r1.disabled = false;
-    r2.disabled = false;
-    r2.checked = true;
-    r1.parentNode.classList.remove("disabled");
-    r2.parentNode.classList.remove("disabled");
-  } else if (!hasFinished(conferenceFinals)) {
-    r1.disabled = false;
-    r2.disabled = false;
-    r3.disabled = false;
-    r3.checked = true;
-    r1.parentNode.classList.remove("disabled");
-    r2.parentNode.classList.remove("disabled");
-    r3.parentNode.classList.remove("disabled");
-  } else {
-    r1.disabled = false;
-    r2.disabled = false;
-    r3.disabled = false;
-    r4.disabled = false;
-    r4.checked = true;
-    r1.parentNode.classList.remove("disabled");
-    r2.parentNode.classList.remove("disabled");
-    r3.parentNode.classList.remove("disabled");
-    r4.parentNode.classList.remove("disabled");
+  const radios = [
+    createRoundSelector("1. kierros", "first", fieldset),
+    createRoundSelector("2. kierros", "second", fieldset),
+    createRoundSelector("Konferenssifinaalit", "third", fieldset),
+    createRoundSelector("Stanley Cup", "fourth", fieldset),
+  ];
+
+  // If every round in roundGames is finished, activate the final (Stanley Cup) radio
+  let activeIndex = roundGames.findIndex((rg) => !hasFinished(rg));
+  if (activeIndex === -1) activeIndex = roundGames.length;
+
+  for (const radio of radios.slice(0, activeIndex + 1)) {
+    radio.disabled = false;
+    radio.parentNode.classList.remove("disabled");
   }
+  radios[activeIndex].checked = true;
 }
 
 function handleRoundChange(ev) {
   const round = ev.target.value;
-  renderTable(round);
+  // fetchData's catch already surfaced the error via showError
+  renderTable(round).catch(() => {});
 }
 
 function createRoundSelector(label, name, fieldset) {
@@ -364,12 +380,11 @@ function showError(message) {
 }
 
 async function fetchWithTimeout(url, timeout = 5000) {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+  try {
     const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -381,46 +396,53 @@ async function fetchWithTimeout(url, timeout = 5000) {
       throw new Error("Request timed out");
     }
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
 async function fetchData() {
   try {
-    if (ENTRIES_DATA === null) {
+    // Work on locals so a failure mid-pipeline leaves globals untouched and a
+    // retry re-fetches cleanly instead of caching partially-normalized state.
+    let entries = ENTRIES_DATA;
+    let series = SERIES_DATA;
+
+    if (entries === null) {
       const entriesResponse = await fetchWithTimeout(ENTRIES_URL);
       if (!entriesResponse?.entries) {
         throw new Error("Invalid entries data received from server");
       }
-
-      ENTRIES_DATA = entriesResponse.entries;
+      entries = entriesResponse.entries;
     }
 
-    if (MEMBERS_DATA === null) {
-      const membersResponse = await fetchWithTimeout(MEMBERS_URL);
-      if (!membersResponse?.members) {
-        throw new Error("Invalid members data received from server");
-      }
-      MEMBERS_DATA = membersResponse.members;
-    }
-
-    if (SERIES_DATA === null) {
-      SERIES_DATA = await fetchWithTimeout(SERIES_URL);
-      if (!SERIES_DATA?.game?.series_results) {
+    if (series === null) {
+      const rawSeries = await fetchWithTimeout(SERIES_URL);
+      if (!rawSeries?.game?.series_results) {
         throw new Error("Invalid series data received from server");
       }
+      series = {
+        ...rawSeries,
+        game: {
+          ...rawSeries.game,
+          series_results: rawSeries.game.series_results.map(normalizeGame),
+          teams: rawSeries.game.teams.map(normalizeTeam),
+        },
+      };
+      const gameIds = series.game.series_results.map((g) => g.id);
+      entries = entries.map((e) => normalizeEntry(e, gameIds));
     }
 
-    if (LEADER_DATA === null && ENTRIES_DATA) {
-      LEADER_DATA = ENTRIES_DATA.reduce(
-        (prev, curr) =>
-          Number.parseInt(prev.points) < Number.parseInt(curr.points)
-            ? curr
-            : prev,
-        ENTRIES_DATA[0],
-      );
+    if (entries.length === 0) {
+      throw new Error("Invalid entries data: empty leaderboard");
     }
 
-    return [ENTRIES_DATA, MEMBERS_DATA, SERIES_DATA];
+    ENTRIES_DATA = entries;
+    SERIES_DATA = series;
+    // Leaderboard endpoint returns entries sorted by points descending
+    LEADER_DATA = entries[0];
+
+    return [ENTRIES_DATA, SERIES_DATA];
   } catch (error) {
     console.error("Error fetching data:", error);
     let errorMessage = "Failed to load data. ";
@@ -432,6 +454,9 @@ async function fetchData() {
       errorMessage += "The server returned unexpected data.";
     } else if (!navigator.onLine) {
       errorMessage += "Please check your internet connection.";
+    } else if (USE_MOCK) {
+      errorMessage +=
+        "Mock server unreachable. Run `npx json-server tests/mock-api.json`.";
     } else {
       errorMessage += "Please try again later.";
     }
@@ -443,7 +468,7 @@ async function fetchData() {
 
 async function renderTable(toDisplay) {
   clearTable();
-  const [entries, members, series] = await fetchData();
+  const [entries, series] = await fetchData();
 
   const games = series.game.series_results;
   const teams = series.game.teams;
@@ -476,30 +501,33 @@ async function renderTable(toDisplay) {
     tbody.appendChild(tr);
   }
 
-  document.querySelector("table").style = "display: block";
-  document.querySelector("#loading").style = "display: none";
+  document.querySelector("table").style.display = "block";
+  document.querySelector("#loading").style.display = "none";
   fieldset.style.display = "flex";
 }
 
-renderFields().then(() => renderTable());
+renderFields()
+  .then(() => renderTable())
+  // fetchData's catch already surfaced the error via showError
+  .catch(() => {});
 
-function uniqueBy(array, key) {
-  const uniques = [];
-  for (const idx in array) {
-    const obj = array[idx];
-    if (uniques.find((ex) => ex[key] == obj[key]) == undefined) {
-      uniques.push(obj);
-    }
-  }
-  return uniques;
-}
-
-// Add theme change listener to update logos
 document.addEventListener("DOMContentLoaded", () => {
+  const themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    });
+  } else {
+    console.warn("#theme-toggle element missing; theme toggle disabled");
+  }
+
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.attributeName === "data-theme") {
-        renderTable();
+        updateLogoTheme(document.documentElement.getAttribute("data-theme"));
       }
     }
   });
