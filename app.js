@@ -323,7 +323,8 @@ async function renderFields() {
 
 function handleRoundChange(ev) {
   const round = ev.target.value;
-  renderTable(round);
+  // fetchData's catch already surfaced the error via showError
+  renderTable(round).catch(() => {});
 }
 
 function createRoundSelector(label, name, fieldset) {
@@ -485,7 +486,10 @@ async function renderTable(toDisplay) {
   fieldset.style.display = "flex";
 }
 
-renderFields().then(() => renderTable());
+renderFields()
+  .then(() => renderTable())
+  // fetchData's catch already surfaced the error via showError
+  .catch(() => {});
 
 // Single DOMContentLoaded: theme toggle button + logo-swap observer
 document.addEventListener("DOMContentLoaded", () => {
