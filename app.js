@@ -116,6 +116,7 @@ function createHeaders(games, teams) {
   const tr = document.querySelector("thead > tr");
   for (const game of games) {
     const th = document.createElement("th");
+    th.scope = "col";
     const div = document.createElement("div");
     div.classList.add("series");
     th.appendChild(div);
@@ -169,11 +170,15 @@ function createRow(entry, tr, games, teams) {
   tr.appendChild(pointsTd);
   tr.appendChild(possiblePointsTd);
 
-  let rankHTML = rank;
   if (Number.parseInt(possible_points) < Number.parseInt(LEADER_DATA.points)) {
-    rankHTML = `<s title="eliminated">${rank}</s>`;
+    const s = document.createElement("s");
+    s.title = "eliminated";
+    s.setAttribute("aria-label", `${rank}, eliminated`);
+    s.textContent = rank;
+    rankTd.appendChild(s);
+  } else {
+    rankTd.textContent = rank;
   }
-  rankTd.innerHTML = rankHTML;
   rankTd.dataset.heading = "rank";
 
   // Bit of entry name cleaning up as the software default's to
@@ -267,12 +272,12 @@ function clearHeaders() {
   const thead = document.querySelector("thead");
   thead.innerHTML = `
   <tr>
-          <th>Sij.</th>
-          <th>Nimi</th>
-          <th>Mestari</th>
-          <th>Pist.</th>
-          <th>Max.</th>
-        </tr>`;
+    <th scope="col">Sij.</th>
+    <th scope="col">Nimi</th>
+    <th scope="col">Mestari</th>
+    <th scope="col">Pist.</th>
+    <th scope="col">Max.</th>
+  </tr>`;
 }
 
 async function renderFields() {
