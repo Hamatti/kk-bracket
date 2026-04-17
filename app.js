@@ -330,7 +330,7 @@ async function renderFields() {
     createRoundSelector("Stanley Cup", "fourth", fieldset),
   ];
 
-  // Default to Stanley Cup (index 3) if all earlier rounds are finished
+  // If every round in roundGames is finished, activate the final (Stanley Cup) radio
   let activeIndex = roundGames.findIndex((rg) => !hasFinished(rg));
   if (activeIndex === -1) activeIndex = roundGames.length;
 
