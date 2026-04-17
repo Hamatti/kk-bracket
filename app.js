@@ -311,17 +311,12 @@ async function renderFields() {
   ];
 
   // Default to Stanley Cup (index 3) if all earlier rounds are finished
-  let activeIndex = roundGames.length;
-  for (let i = 0; i < roundGames.length; i++) {
-    if (!hasFinished(roundGames[i])) {
-      activeIndex = i;
-      break;
-    }
-  }
+  let activeIndex = roundGames.findIndex((rg) => !hasFinished(rg));
+  if (activeIndex === -1) activeIndex = roundGames.length;
 
-  for (let i = 0; i <= activeIndex; i++) {
-    radios[i].disabled = false;
-    radios[i].parentNode.classList.remove("disabled");
+  for (const radio of radios.slice(0, activeIndex + 1)) {
+    radio.disabled = false;
+    radio.parentNode.classList.remove("disabled");
   }
   radios[activeIndex].checked = true;
 }
