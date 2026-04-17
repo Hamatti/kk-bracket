@@ -1,11 +1,3 @@
-/* A general note: this file uses a lot of == instead of === for a purpose.
- * The API is very inconsistent in how it stores information:
- * sometimes its numbers and sometimes numeric strings.
- *
- * Don't blindly refactor them to === or you'll make a mess.
- * A better approach would be to actually map what types are used and where.
- */
-
 /* CONFIGURATION */
 // If you want to configure this to your league, change the LEAGUE_ID to match
 // your league id in NHL Bracket Challenge
@@ -41,12 +33,10 @@ function initTheme() {
 document.addEventListener("DOMContentLoaded", initTheme);
 
 const ENTRIES_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/leaderboard?offset=0&limit=100`;
-const MEMBERS_URL = `https://low6-nhl-brackets-prod.azurewebsites.net/leagues/${LEAGUE_ID}/search-members?search=&offset=0&limit=50`;
 const SERIES_URL = "https://low6-nhl-brackets-prod.azurewebsites.net/game";
 const LOGO_BASE = "https://assets.nhle.com/logos/nhl/svg/";
 
 let ENTRIES_DATA = null;
-let MEMBERS_DATA = null;
 let SERIES_DATA = null;
 let LEADER_DATA = null;
 
@@ -56,6 +46,42 @@ title.textContent = `${LEAGUE_DISPLAY_NAME} ${title.textContent}`;
 const h1 = document.querySelector("h1");
 h1.textContent = `${LEAGUE_DISPLAY_NAME} ${h1.textContent}`;
 
+// Normalize API fields to numbers at the fetch boundary so the rest of the
+// code can use === throughout.
+function normalizeGame(game) {
+  return {
+    ...game,
+    id: Number(game.id),
+    team_1_id: Number(game.team_1_id),
+    team_2_id: Number(game.team_2_id),
+    winner_id: game.winner_id != null ? Number(game.winner_id) : null,
+    team_1_wins: Number(game.team_1_wins),
+    team_2_wins: Number(game.team_2_wins),
+    round_sequence: Number(game.round_sequence),
+  };
+}
+
+function normalizeTeam(team) {
+  return { ...team, team_id: Number(team.team_id) };
+}
+
+function normalizeEntry(entry, gameIds) {
+  const norm = {
+    ...entry,
+    rank: Number(entry.rank),
+    points: Number(entry.points),
+    possible_points: Number(entry.possible_points),
+    champion_id: Number(entry.champion_id),
+  };
+  for (const id of gameIds) {
+    if (`match_${id}_pick` in norm)
+      norm[`match_${id}_pick`] = Number(norm[`match_${id}_pick`]);
+    if (`match_${id}_match_played` in norm)
+      norm[`match_${id}_match_played`] = Number(norm[`match_${id}_match_played`]);
+  }
+  return norm;
+}
+
 /**
  * Checks if user's pick for a given series is correct
  * @param {object} entry User's entry
@@ -63,8 +89,7 @@ h1.textContent = `${LEAGUE_DISPLAY_NAME} ${h1.textContent}`;
  * @returns user's pick matches the result of game
  */
 function isCorrectPick(entry, game) {
-  // User picks are strings, winner_id is number. Lovely.
-  return Number.parseInt(entry[`match_${game.id}_pick`]) === game.winner_id;
+  return entry[`match_${game.id}_pick`] === game.winner_id;
 }
 
 /**
@@ -75,19 +100,11 @@ function isCorrectPick(entry, game) {
  * @returns
  */
 function isCorrectAmountGames(entry, game) {
-  // If series isn't finished yet, early return false
   if (!game.is_scored) {
     return false;
   }
-
-  // Amount of wins are strings. Lovely.
-  const t1_wins = Number.parseInt(game.team_1_wins);
-  const t2_wins = Number.parseInt(game.team_2_wins);
-  const seriesLength = t1_wins + t2_wins;
-  // Amount of wins is a string. Lovely.
-  const howManyGames = Number.parseInt(entry[`match_${game.id}_match_played`]);
-
-  return seriesLength === howManyGames;
+  const seriesLength = game.team_1_wins + game.team_2_wins;
+  return seriesLength === entry[`match_${game.id}_match_played`];
 }
 
 /**
@@ -124,12 +141,12 @@ function createHeaders(games, teams) {
     tr.appendChild(th);
 
     const homeLogo = document.createElement("img");
-    const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
+    const homeTeam = teams.find((team) => team.team_id === game.team_1_id);
     homeLogo.alt = homeTeam?.display_name || "?";
     homeLogo.src = homeTeam ? getLogoUrl(homeTeam.abbreviation) : null;
 
     const awayLogo = document.createElement("img");
-    const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
+    const awayTeam = teams.find((team) => team.team_id === game.team_2_id);
     awayLogo.alt = awayTeam?.display_name || "?";
     awayLogo.src = awayTeam ? getLogoUrl(awayTeam.abbreviation) : null;
 
@@ -170,7 +187,7 @@ function createRow(entry, tr, games, teams) {
   tr.appendChild(pointsTd);
   tr.appendChild(possiblePointsTd);
 
-  if (Number.parseInt(possible_points) < Number.parseInt(LEADER_DATA.points)) {
+  if (possible_points < LEADER_DATA.points) {
     const s = document.createElement("s");
     s.title = "eliminated";
     s.setAttribute("aria-label", `${rank}, eliminated`);
@@ -190,19 +207,17 @@ function createRow(entry, tr, games, teams) {
   nameTd.dataset.heading = "name";
 
   const championLogo = document.createElement("img");
-  const championTeam = teams.find(
-    (team) => team.team_id === Number.parseInt(champion_id),
-  );
-  championLogo.src = getLogoUrl(championTeam.abbreviation);
-  championLogo.alt = championTeam.display_name;
+  const championTeam = teams.find((team) => team.team_id === champion_id);
+  championLogo.src = championTeam ? getLogoUrl(championTeam.abbreviation) : "invalid.svg";
+  championLogo.alt = championTeam?.display_name || "?";
   championTd.appendChild(championLogo);
   championTd.classList.add("narrow", "logo");
   championTd.dataset.heading = "champion";
 
-  pointsTd.innerHTML = points;
+  pointsTd.textContent = points;
   pointsTd.dataset.heading = "points";
 
-  possiblePointsTd.innerHTML = possible_points;
+  possiblePointsTd.textContent = possible_points;
   possiblePointsTd.dataset.heading = "max points";
 
   for (const game of games) {
@@ -215,25 +230,21 @@ function createRow(entry, tr, games, teams) {
 
     gameTd.classList.add("narrow", "logo");
 
-    const homeTeam = teams.find((team) => team.team_id == game.team_1_id);
-    const awayTeam = teams.find((team) => team.team_id == game.team_2_id);
+    const homeTeam = teams.find((team) => team.team_id === game.team_1_id);
+    const awayTeam = teams.find((team) => team.team_id === game.team_2_id);
     gameTd.dataset.heading = `${homeTeam?.abbreviation || "?"} - ${awayTeam?.abbreviation || "?"}`;
 
-    const gameId = game.id;
-    const pickKey = `match_${gameId}_pick`;
-    const userPick = entry[pickKey];
+    const userPick = entry[`match_${game.id}_pick`];
 
     // If user's pick is not in the running anymore
-    if (userPick != game.team_1_id && userPick != game.team_2_id) {
+    if (userPick !== game.team_1_id && userPick !== game.team_2_id) {
       selectedPick.src = "dash.svg";
       selectedPick.alt = "Pick no longer in play";
       selectedPick.classList.add("dash-icon");
     } else {
-      const pickedTeam = teams.find(
-        (team) => team.team_id === Number.parseInt(userPick),
-      );
-      selectedPick.src = getLogoUrl(pickedTeam.abbreviation);
-      selectedPick.alt = pickedTeam.display_name;
+      const pickedTeam = teams.find((team) => team.team_id === userPick);
+      selectedPick.src = pickedTeam ? getLogoUrl(pickedTeam.abbreviation) : "invalid.svg";
+      selectedPick.alt = pickedTeam?.display_name || "?";
     }
 
     // If the series is finished, show which picks were right
@@ -384,23 +395,24 @@ async function fetchData() {
       if (!entriesResponse?.entries) {
         throw new Error("Invalid entries data received from server");
       }
-
       ENTRIES_DATA = entriesResponse.entries;
     }
 
-    if (MEMBERS_DATA === null) {
-      const membersResponse = await fetchWithTimeout(MEMBERS_URL);
-      if (!membersResponse?.members) {
-        throw new Error("Invalid members data received from server");
-      }
-      MEMBERS_DATA = membersResponse.members;
-    }
-
     if (SERIES_DATA === null) {
-      SERIES_DATA = await fetchWithTimeout(SERIES_URL);
-      if (!SERIES_DATA?.game?.series_results) {
+      const rawSeries = await fetchWithTimeout(SERIES_URL);
+      if (!rawSeries?.game?.series_results) {
         throw new Error("Invalid series data received from server");
       }
+      SERIES_DATA = {
+        ...rawSeries,
+        game: {
+          ...rawSeries.game,
+          series_results: rawSeries.game.series_results.map(normalizeGame),
+          teams: rawSeries.game.teams.map(normalizeTeam),
+        },
+      };
+      const gameIds = SERIES_DATA.game.series_results.map((g) => g.id);
+      ENTRIES_DATA = ENTRIES_DATA.map((e) => normalizeEntry(e, gameIds));
     }
 
     if (LEADER_DATA === null && ENTRIES_DATA) {
@@ -408,7 +420,7 @@ async function fetchData() {
       LEADER_DATA = ENTRIES_DATA[0];
     }
 
-    return [ENTRIES_DATA, MEMBERS_DATA, SERIES_DATA];
+    return [ENTRIES_DATA, SERIES_DATA];
   } catch (error) {
     console.error("Error fetching data:", error);
     let errorMessage = "Failed to load data. ";
@@ -431,7 +443,7 @@ async function fetchData() {
 
 async function renderTable(toDisplay) {
   clearTable();
-  const [entries, members, series] = await fetchData();
+  const [entries, series] = await fetchData();
 
   const games = series.game.series_results;
   const teams = series.game.teams;
